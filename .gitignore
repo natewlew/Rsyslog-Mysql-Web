@@ -1,0 +1,5 @@
+.anjuta/
+.anjuta_sym_db.db
+.ropeproject/
+rsyslog_mysql_web.anjuta
+*.pyc
