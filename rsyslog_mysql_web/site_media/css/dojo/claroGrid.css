@@ -130,7 +130,7 @@
 	
 	border-left: none;
 	border-right: none;
-	background-color: white;
+	/* background-color: white; */
 	border-top: none;
 }
 .dojoxGridRowOver {
@@ -470,7 +470,7 @@
 }
 .claro .dojoxGridRow {
 	border:none;
-	background-color:#fff;
+	/* background-color:#fff; */
 }
 .dj_ie .claro .dojoxGridMasterView .dojoxGridRowTable {
 	border-collapse:separate;

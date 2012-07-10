@@ -18,6 +18,7 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 from django.shortcuts import render_to_response
 from logviewer.models import Systemevents, Facilities, Priorites
 from django.template import RequestContext
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from datetime import datetime
 from django.shortcuts import redirect
@@ -109,3 +110,73 @@ def index(request):
 
     return render_to_response(
         template + '/index.html', {'first_table': first_table})
+
+def rsyslog(request):
+
+    return render_to_response(template + '/googlechart.html')    
+    
+    
+def googlechart(request):
+
+    import gviz_api
+    from django.http import HttpResponse
+    
+    queryset = Systemevents.objects.all().order_by('-id').values("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
+    
+    paginator = Paginator(queryset, 15) # Show 25
+
+    page = request.GET.get('page')
+    
+    try:
+        limited_query = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        limited_query = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        limited_query = paginator.page(paginator.num_pages)
+
+    # These are the columns that you provided in the datasource.setQuery() function
+    # Make it a set to filter out duplicates
+    columns = set(request.GET.get('tq', '').split('+'))
+    
+    #return HttpResponse(queryset.query)
+    
+    all_fields = Systemevents._meta.get_all_field_names()
+
+    # Always add the date column
+    description = {}
+    #description['date'] = ('date', 'Date')
+    description['id'] = ('number', 'ID')
+    description['devicereportedtime'] = ('datetime', 'Reported Time')
+    description['facility'] = ('string', 'Facility')
+    description['priority'] = ('string', 'Priority')
+    description['fromhost'] = ('string', 'Host')
+    description['syslogtag'] = ('string', 'Tag')
+    description['message'] = ('string', 'Message')
+        
+    #for column in columns:
+    #    if column in all_fields:
+    #        title = unicode(Books._meta.get_field(column).verbose_name)
+    #        description[column] = ('number', title)
+
+    data_table = gviz_api.DataTable(description)
+
+    for query in limited_query:
+        data_table.AppendData([query])
+
+    return HttpResponse(data_table.ToResponse(columns_order=("id","devicereportedtime","facility","priority","fromhost","syslogtag","message"), 
+                                              tqx=request.GET.get('tqx', '')))
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
