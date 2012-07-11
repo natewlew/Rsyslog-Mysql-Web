@@ -121,11 +121,29 @@ def googlechart(request):
     import gviz_api
     from django.http import HttpResponse
     
-    queryset = Systemevents.objects.all().order_by('-id').values("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
+    columns = set(request.GET.get('tq', '').split(','))
+    split_colums = "";
+    params = {}
     
-    paginator = Paginator(queryset, 15) # Show 25
+    for column in columns:
+        split_columns = column.split(':')
+        
+        params[split_columns[0].strip()] = split_columns[1].strip()
+    
+    
+    queryset = Systemevents.objects.all().order_by('-id').values("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
 
-    page = request.GET.get('page')
+    page = params['page']
+    rows = params['rows']
+    
+    #import pdb; pdb.set_trace()
+    
+    try:
+	    rows=int(rows)
+    except:
+	    rows = 15
+        
+    paginator = Paginator(queryset, rows)
     
     try:
         limited_query = paginator.page(page)
@@ -135,11 +153,7 @@ def googlechart(request):
     except EmptyPage:
         # If page is out of range (e.g. 9999), deliver last page of results.
         limited_query = paginator.page(paginator.num_pages)
-
-    # These are the columns that you provided in the datasource.setQuery() function
-    # Make it a set to filter out duplicates
-    columns = set(request.GET.get('tq', '').split('+'))
-    
+     
     #return HttpResponse(queryset.query)
     
     all_fields = Systemevents._meta.get_all_field_names()
@@ -161,8 +175,9 @@ def googlechart(request):
     #        description[column] = ('number', title)
 
     data_table = gviz_api.DataTable(description)
-
+    
     for query in limited_query:
+        query["message"] = query["message"][:120]
         data_table.AppendData([query])
 
     return HttpResponse(data_table.ToResponse(columns_order=("id","devicereportedtime","facility","priority","fromhost","syslogtag","message"), 
