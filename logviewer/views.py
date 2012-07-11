@@ -125,17 +125,25 @@ def googlechart(request):
     split_colums = "";
     params = {}
     
+    page = ""
+    rows = ""
+    
     for column in columns:
         split_columns = column.split(':')
         
-        params[split_columns[0].strip()] = split_columns[1].strip()
+        try:
+            params[split_columns[0].strip()] = split_columns[1].strip()
+        except:
+            pass
     
-    
-    queryset = Systemevents.objects.all().order_by('-id').values("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
+    queryset = Systemevents.objects.all().order_by('-id').select_related("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
 
-    page = params['page']
-    rows = params['rows']
-    
+    try:
+        page = params['page']
+        rows = params['rows']
+    except:
+        pass
+        
     #import pdb; pdb.set_trace()
     
     try:
@@ -160,7 +168,6 @@ def googlechart(request):
 
     # Always add the date column
     description = {}
-    #description['date'] = ('date', 'Date')
     description['id'] = ('number', 'ID')
     description['devicereportedtime'] = ('datetime', 'Reported Time')
     description['facility'] = ('string', 'Facility')
@@ -168,17 +175,23 @@ def googlechart(request):
     description['fromhost'] = ('string', 'Host')
     description['syslogtag'] = ('string', 'Tag')
     description['message'] = ('string', 'Message')
-        
-    #for column in columns:
-    #    if column in all_fields:
-    #        title = unicode(Books._meta.get_field(column).verbose_name)
-    #        description[column] = ('number', title)
 
+    myvalues = {}
+    
     data_table = gviz_api.DataTable(description)
     
     for query in limited_query:
-        query["message"] = query["message"][:120]
-        data_table.AppendData([query])
+        
+        myvalues = {'id': query.id,
+                    'devicereportedtime': query.devicereportedtime,
+                    'facility': query.facility,
+                    'priority': query.priority,
+                    'fromhost': query.fromhost,
+                    'syslogtag': query.syslogtag,
+                    'message': query.message[:120]
+                    }
+        
+        data_table.AppendData([myvalues])
 
     return HttpResponse(data_table.ToResponse(columns_order=("id","devicereportedtime","facility","priority","fromhost","syslogtag","message"), 
                                               tqx=request.GET.get('tqx', '')))

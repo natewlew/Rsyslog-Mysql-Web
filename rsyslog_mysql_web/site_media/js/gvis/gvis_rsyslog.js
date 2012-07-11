@@ -75,9 +75,27 @@ TableQueryWrapper.prototype.handleResponse = function(response) {
   } else {
     this.currentDataTable = response.getDataTable();
     
+    /*
+    Priority Conditional Formating
+    0	Emergency //brown #917171
+    1	Alert // dark red #B23232
+    2	Critical //red #FF4747
+    3	Error //pink #FFC0C0
+    4	Warning //orange #FFCD82
+    5	Notice // blue #94DBFF
+    6	Informational //green #85FF85
+    7	Debug //yellow #FFFF4D
+    */
+                    
     var formatter = new google.visualization.ColorFormat();
-    formatter.addRange(4, null, 'white', 'orange');
-    formatter.addRange(3, null, 'white', 'red');
+    formatter.addRange("Emergency", "Emergency-1", 'white', '#917171');
+    formatter.addRange("Alert", "Alert-1", 'white', '#B23232');
+    formatter.addRange("Critical", "Critical-1", 'white', '#FF4747');
+    formatter.addRange("Error", "Error-1", 'white', '#FFC0C0');
+    formatter.addRange("Warning", "Warning-1", 'white', '#FFCD82');
+    formatter.addRange("Notice", "Notice-1", 'white', '#94DBFF');
+    formatter.addRange("Informational", "Informational-1", 'white', '#85FF85');
+    formatter.addRange("Debug", "Debug-1", 'white', '#FFFF4D');
     formatter.format(this.currentDataTable, 3);
   
     this.table.draw(this.currentDataTable, this.tableOptions);
