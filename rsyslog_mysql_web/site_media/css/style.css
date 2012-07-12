@@ -8,3 +8,13 @@
     font-family: "Times New Roman", Times, serif;
     font-size: 14px;
 }
+
+.messagedetail {
+    border-style:solid; 
+    border-width: 1px; 
+    border-color: #eeeeee; 
+    padding: 5px; 
+    background-color: white;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 14px;
+}
