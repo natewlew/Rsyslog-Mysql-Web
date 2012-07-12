@@ -25,9 +25,8 @@ import os
 
 urlpatterns = patterns('',
 
-    url(r'^$', 'logviewer.views.index', name = 'logs'),
-    url(r'^rsyslog/$', 'logviewer.views.rsyslog', name = 'rsyslog'),
-    url(r'^googlechart/$', 'logviewer.views.googlechart', name = 'googlechart'),
+    url(r'^$', 'logviewer.views.index', name = 'rsyslog'),
+    url(r'^rsyslogjson/$', 'logviewer.views.rsyslogjson', name = 'rsyslogjson'),
     #url(r'^logs/ajax/$', 'logviewer.views.logsajax', name = 'logs_ajax'),
     #url(r'^logs/dojo/$', 'logviewer.views.logsdojo', name = 'logs_dojo'), # Examples:
     # url(r'^$', 'rsyslog_mysql_web.views.home', name='home'),

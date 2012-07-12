@@ -6,12 +6,12 @@
 <style type="text/css">
 </style>
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-<script type="text/javascript" src="/site_media/js/gvis/gvis_rsyslog.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}js/gvis/gvis_rsyslog.js"></script>
 </head>
 <body>
 <script type="text/javascript">
     
-    var dataSourceUrl = 'http://localhost:8000/googlechart';
+    var dataSourceUrl = '{{ SITE_URL }}rsyslogjson';
     var elementID = 'rsyslog';
     var default_page = 20;
     var showRowNumber = true;
