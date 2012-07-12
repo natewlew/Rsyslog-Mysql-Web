@@ -28,12 +28,14 @@ var TableQueryWrapper = function(query, container, options) {
   this.pageQueryClause = '';
   this.container = container;
   this.currentDataTable = null;
+  this.view = null;
 
   var self = this;
   var addListener = google.visualization.events.addListener;
   addListener(this.table, 'page', function(e) {self.handlePage(e)});
   addListener(this.table, 'sort', function(e) {self.handleSort(e)});
-
+  addListener(this.table, 'select', function(e) {self.handleSelect(e)});
+      
   options = options || {};
   options = TableQueryWrapper.clone(options);
 
@@ -48,6 +50,7 @@ var TableQueryWrapper = function(query, container, options) {
   this.tableOptions = options;
   this.currentPageIndex = 0;
   this.setPageQueryClause(0);
+  
 };
 
 
@@ -75,6 +78,9 @@ TableQueryWrapper.prototype.handleResponse = function(response) {
   } else {
     this.currentDataTable = response.getDataTable();
     
+    this.view = new google.visualization.DataView(this.currentDataTable);
+    this.view.setColumns([0,1,2,3,4,5,6]);
+    
     /*
     Priority Conditional Formating
     0	Emergency //brown #917171
@@ -91,14 +97,15 @@ TableQueryWrapper.prototype.handleResponse = function(response) {
     formatter.addRange("Emergency", "Emergency-1", 'white', '#917171');
     formatter.addRange("Alert", "Alert-1", 'white', '#B23232');
     formatter.addRange("Critical", "Critical-1", 'white', '#FF4747');
-    formatter.addRange("Error", "Error-1", 'white', '#FFC0C0');
-    formatter.addRange("Warning", "Warning-1", 'white', '#FFCD82');
+    formatter.addRange("Error", "Error-1", 'black', '#FFC0C0');
+    formatter.addRange("Warning", "Warning-1", 'black', '#FFCD82');
     formatter.addRange("Notice", "Notice-1", 'white', '#94DBFF');
     formatter.addRange("Informational", "Informational-1", 'white', '#85FF85');
     formatter.addRange("Debug", "Debug-1", 'white', '#FFFF4D');
     formatter.format(this.currentDataTable, 3);
   
-    this.table.draw(this.currentDataTable, this.tableOptions);
+    this.table.draw(this.view, this.tableOptions);
+  
   }
 };
 
@@ -128,7 +135,16 @@ TableQueryWrapper.prototype.handlePage = function(properties) {
     this.sendAndDraw();
   }
 };
-
+     
+/** Handles Select on Row **/
+TableQueryWrapper.prototype.handleSelect = function(properties) {
+    var myrow = this.table.getSelection()[0].row;
+    //alert('You selected ' + this.currentDataTable.getValue(myrow, 7));
+    
+    var message_detail_text = this.currentDataTable.getValue(myrow, 7)
+    var message_detail = document.getElementById('message_detail');
+    message_detail.innerHTML = '<h2>Message Detail</h2><hr /><b>' + message_detail_text + '</b>';
+};
 
 /**
  * Sets the pageQueryClause and table options for a new page request.

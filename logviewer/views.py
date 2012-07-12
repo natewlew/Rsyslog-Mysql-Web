@@ -175,12 +175,18 @@ def googlechart(request):
     description['fromhost'] = ('string', 'Host')
     description['syslogtag'] = ('string', 'Tag')
     description['message'] = ('string', 'Message')
+    description['messagefull'] = ('string', 'Message Full')
 
     myvalues = {}
     
     data_table = gviz_api.DataTable(description)
     
-    for query in limited_query:
+    for query in limited_query:     
+    
+        mymessage = "%s ...." % query.message[:120]
+        
+        if(len(mymessage) > 120):
+            mymessage = mymessage
         
         myvalues = {'id': query.id,
                     'devicereportedtime': query.devicereportedtime,
@@ -188,12 +194,13 @@ def googlechart(request):
                     'priority': query.priority,
                     'fromhost': query.fromhost,
                     'syslogtag': query.syslogtag,
-                    'message': query.message[:120]
+                    'message': mymessage,
+                    'messagefull': query.message
                     }
         
         data_table.AppendData([myvalues])
 
-    return HttpResponse(data_table.ToResponse(columns_order=("id","devicereportedtime","facility","priority","fromhost","syslogtag","message"), 
+    return HttpResponse(data_table.ToResponse(columns_order=("id","devicereportedtime","facility","priority","fromhost","syslogtag","message","messagefull"), 
                                               tqx=request.GET.get('tqx', '')))
     
     
