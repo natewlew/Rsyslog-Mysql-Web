@@ -24,7 +24,7 @@ template="logviewer"
 
 def index(request):
 
-    return render_to_response(template + '/googlechart.html', {'SITE_URL': settings.SITE_URL, 'MEDIA_URL': settings.MEDIA_URL})    
+    return render_to_response(template + '/index.html', {'SITE_URL': settings.SITE_URL, 'MEDIA_URL': settings.MEDIA_URL})    
     
     
 def rsyslogjson(request):
