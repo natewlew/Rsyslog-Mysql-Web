@@ -2,11 +2,10 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title></title>
-<style type="text/css">
-</style>
+<title>Rsyslog Mysql Web</title>
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript" src="{{ MEDIA_URL }}js/gvis/gvis_rsyslog.js"></script>
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/style.css" />
 </head>
 <body>
 <script type="text/javascript">
@@ -20,8 +19,17 @@
 </script>
 
 <h1>Rsylog Mysql Web</h1>
-<form action="">
-  Rows per page:
+<div class="detailbox">
+<form action="" onSubmit="return formsubmit();">
+  Host: <input type="text" name="fromhost" size="20" id="fromhost">
+  <input type="button" name="clear_fromhost" value="<" onClick="clear_input('fromhost')">
+  Priority: <input type="text" name="priority" size="20" id="priority">
+  <input type="button" name="clear_priority" value="<" onClick="clear_input('priority')">
+  Tag: <input type="text" name="syslogtag" size="20" id="syslogtag">
+  <input type="button" name="clear_syslogtag" value="<" onClick="clear_input('syslogtag')">
+  <input type="submit" name="submit" value="Submit">
+  <input type="button" name="reset" value="Reset" onClick="reset_page()">
+  &nbsp; Rows per page:
   <select onChange="setOption('pageSize', parseInt(this.value, 10))">
     <option value="20">20</option>
     <option value="30">30</option>
@@ -29,16 +37,15 @@
     <option value="75">75</option>
     <option value="100">100</option>
   </select>
-  <input type="button" name="reset" value="Reset" onClick="init()">
 </form>
-<br />
+</div>
 <div id="rsyslog" ></div>
 <h3>Event Detail</h3>
-<div style="border-style:solid; border-width: 1px; border-color: light-grey; padding: 5px;">
+<div class="detailbox">
 <p>
-<i id="date_detail"></i> 
-<i id="host_detail"></i> 
-<i id="priority_detail"></i>
+<i id="date_detail"></i><br />
+<i id="host_detail"></i><br />
+<i id="priority_detail"></i><br />
 </p>
 <p id="tag_detail"></p>
 <p>

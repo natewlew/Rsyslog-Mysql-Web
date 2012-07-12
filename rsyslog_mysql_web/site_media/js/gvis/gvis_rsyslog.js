@@ -64,7 +64,7 @@ var TableQueryWrapper = function(query, container, options) {
  */
 TableQueryWrapper.prototype.sendAndDraw = function() {
   this.query.abort();
-  var queryClause = this.sortQueryClause + this.pageQueryClause;
+  var queryClause = getFormQuery() + this.sortQueryClause + this.pageQueryClause;
   this.query.setQuery(queryClause);
   this.table.setSelection([]);
   var self = this;
@@ -121,7 +121,7 @@ TableQueryWrapper.prototype.handleSort = function(properties) {
   this.tableOptions['sortAscending'] = isAscending;
   // dataTable exists since the user clicked the table.
   var colID = this.currentDataTable.getColumnId(columnIndex);
-  this.sortQueryClause = 'orderby:' + colID + (!isAscending ? ',direction:desc,' : ',direction:asc,');
+  this.sortQueryClause = 'orderby::' + colID + (!isAscending ? ',direction::desc,' : ',direction::asc,');
   // Calls sendAndDraw internally.
   this.handlePage({'page': 0});
 };
@@ -158,30 +158,38 @@ TableQueryWrapper.prototype.handleSelect = function(properties) {
 };
 
 /** Set the Detail Text. This is located below the data table **/
-function setDetailText(message, host, mydate, priority, tag) {
+function setDetailText(mymessage, host, mydate, priority, tag) {
 
-    if(host.length > 0) {
-        host = host + ' | ';
+    var host_query_helper = ""
+    var priority_query_helper = ""
+    var tag_query_helper = ""
+    
+    if(mymessage.length > 0) {
+    
+        host_query_helper = '<input type="button" value="Search" onClick="append_host_query(\'' + host + '\')"> <input type="button" value="Exclude" onClick="append_host_query(\'-' + host + '\')"> '
+        
+        priority_query_helper = '<input type="button" value="Search" onClick="append_priority_query(\'' + priority + '\')"> <input type="button" value="Exclude" onClick="append_priority_query(\'-' + priority + '\')"> '
+        
+        tag_query_helper = '<input type="button" value="Search" onClick="append_tag_query(\'' + tag + '\')"> <input type="button" value="Exclude" onClick="append_tag_query(\'-' + tag + '\')"> '
     }
     
-    if(mydate.length > 0) {
-        mydate = mydate + ' | ';
-    }
+    
     
     var message_detail = document.getElementById('message_detail');
-    message_detail.innerHTML = message;
+    message_detail.innerHTML = mymessage;
     
     var host_detail = document.getElementById('host_detail');  
-    host_detail.innerHTML = host;
+    host_detail.innerHTML = host_query_helper + host;
     
     var date_detail = document.getElementById('date_detail');  
     date_detail.innerHTML = mydate;
     
-    var priority_detail = document.getElementById('priority_detail');  
-    priority_detail.innerHTML = priority;
+    var priority_detail = document.getElementById('priority_detail'); 
+      
+    priority_detail.innerHTML = priority_query_helper + priority;
     
     var tag_detail = document.getElementById('tag_detail');  
-    tag_detail.innerHTML = tag;
+    tag_detail.innerHTML = tag_query_helper + tag;
 }
 
 /**
@@ -206,7 +214,7 @@ TableQueryWrapper.prototype.setPageQueryClause = function(pageIndex) {
   var newStartRow = this.currentPageIndex * pageSize;
   // Get the pageSize + 1 so that we can know when the last page is reached.
   //this.pageQueryClause = 'limit ' + (pageSize) + ' offset ' + newStartRow;
-  this.pageQueryClause = 'page:' + (pageIndex + 1) + ',rows:' + pageSize;
+  this.pageQueryClause = 'page::' + (pageIndex + 1) + ',rows::' + pageSize;
   //alert(this.pageQueryClause);
   // Note: row numbers are 1-based yet dataTable rows are 0-based.
   this.tableOptions['firstRowNumber'] = newStartRow + 1;
@@ -222,3 +230,76 @@ TableQueryWrapper.clone = function(obj) {
   }
   return newObj;
 };
+
+function reset_page() {
+    
+    clear_form()
+    
+    init();
+}
+
+function formsubmit() {
+    
+    init();
+    
+    return false;
+}
+
+function clear_form() {
+
+    clear_input('fromhost');
+    clear_input('priority');
+    clear_input('syslogtag');
+}
+
+function getFormQuery() {
+    
+    var fromhost = document.getElementById('fromhost');
+    
+    var fromhostQuery = 'fromhost::' + fromhost.value + ','
+    
+    return fromhostQuery;
+}
+
+function clear_input(input) {
+
+    var element = document.getElementById(input);
+    element.value = "";
+    
+}
+
+function append_host_query(host) {
+
+    var element = document.getElementById('fromhost');
+    
+    if(element.value.length > 0) {
+        element.value = element.value + '||' + host;
+    } else {
+        element.value = host;
+    }
+
+}
+
+function append_priority_query(priority) {
+
+    var element = document.getElementById('priority');
+    
+    if(element.value.length > 0) {
+        element.value = element.value + '||' + priority;
+    } else {
+        element.value = priority;
+    }
+
+}
+
+function append_tag_query(tag) {
+
+    var element = document.getElementById('syslogtag');
+    
+    if(element.value.length > 0) {
+        element.value = element.value + '||' + tag;
+    } else {
+        element.value = tag;
+    }
+
+}

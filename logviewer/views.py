@@ -19,6 +19,8 @@ from django.shortcuts import render_to_response
 from logviewer.models import Systemevents, Facilities, Priorites
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
+from django.db.models import Q
+import operator
 
 template="logviewer"
 
@@ -46,7 +48,7 @@ def rsyslogjson(request):
     
     # Create params from tq split
     for column in columns:
-        split_columns = column.split(':')
+        split_columns = column.split('::')
         
         try:
             params[split_columns[0].strip()] = split_columns[1].strip()
@@ -76,12 +78,45 @@ def rsyslogjson(request):
     
     # if rows is not an integer, set it to 20
     try:
-	    rows=int(rows) 
+	    rows=int(rows)
     except:
 	    rows = 20
-        
+    
+    list_in = []
+    list_ex = []
+    
+	# Set form Values
+    try:
+        fromhost = params['fromhost']
+    except:
+        pass
+    
+    split_hosts = fromhost.split('||')
+    
+    for hosts in split_hosts:
+    
+        if len(hosts) > 0:
+            if hosts.startswith("-"):
+                #not equal to
+                list_ex.append( Q(**{'fromhost__icontains':hosts[1:]} ) ) 
+            else:
+                #equal to
+                list_in.append( Q(**{'fromhost__icontains':hosts} ) ) 
+    
+    list_in_txt = Q()
+    list_ex_txt = Q()
+       
+    if len(list_in) > 0:
+        list_in_txt = reduce(operator.or_, list_in)
+    
+    if len(list_ex) > 0:
+        list_ex_txt = reduce(operator.or_, list_ex)
+    
+    #import pdb; pdb.set_trace()
+      
     # Get the query set
-    queryset = Systemevents.objects.all().order_by(orderby).select_related("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
+    queryset = Systemevents.objects.filter( list_in_txt ).exclude( list_ex_txt ).order_by(orderby).all()
+    #.select_related("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
     
     # Set the paginator
     paginator = Paginator(queryset, rows)
