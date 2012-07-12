@@ -2,6 +2,9 @@ google.load('visualization', '1', {'packages' : ['table']});
 google.setOnLoadCallback(init);
 
 function init() {
+
+  setDetailText("", "", "", "", ""); // Clear the detail text
+  
   query = new google.visualization.Query(dataSourceUrl);
   container = document.getElementById(elementID);
   options = {'pageSize': default_page};
@@ -61,7 +64,7 @@ var TableQueryWrapper = function(query, container, options) {
  */
 TableQueryWrapper.prototype.sendAndDraw = function() {
   this.query.abort();
-  var queryClause = this.sortQueryClause + ' ' + this.pageQueryClause;
+  var queryClause = this.sortQueryClause + this.pageQueryClause;
   this.query.setQuery(queryClause);
   this.table.setSelection([]);
   var self = this;
@@ -118,7 +121,7 @@ TableQueryWrapper.prototype.handleSort = function(properties) {
   this.tableOptions['sortAscending'] = isAscending;
   // dataTable exists since the user clicked the table.
   var colID = this.currentDataTable.getColumnId(columnIndex);
-  this.sortQueryClause = 'order by `' + colID + (!isAscending ? '` desc' : '`');
+  this.sortQueryClause = 'orderby:' + colID + (!isAscending ? ',direction:desc,' : ',direction:asc,');
   // Calls sendAndDraw internally.
   this.handlePage({'page': 0});
 };
@@ -126,6 +129,9 @@ TableQueryWrapper.prototype.handleSort = function(properties) {
 
 /** Handles a page event with the given properties. */
 TableQueryWrapper.prototype.handlePage = function(properties) {
+
+  setDetailText("", "", "", "", ""); // Clear the detail text
+  
   var localTableNewPage = properties['page']; // 1, -1 or 0
   var newPage = 0;
   if (localTableNewPage != 0) {
@@ -141,10 +147,42 @@ TableQueryWrapper.prototype.handleSelect = function(properties) {
     var myrow = this.table.getSelection()[0].row;
     //alert('You selected ' + this.currentDataTable.getValue(myrow, 7));
     
-    var message_detail_text = this.currentDataTable.getValue(myrow, 7)
-    var message_detail = document.getElementById('message_detail');
-    message_detail.innerHTML = '<h2>Message Detail</h2><hr /><b>' + message_detail_text + '</b>';
+    var message_detail_text = this.currentDataTable.getValue(myrow, 7);  
+    var host_detail_text = this.currentDataTable.getValue(myrow, 4); 
+    var date_detail_text = this.currentDataTable.getValue(myrow, 1);  
+    var priority_detail_text = this.currentDataTable.getValue(myrow, 3);
+    var tag_detail_text = this.currentDataTable.getValue(myrow, 5);
+    
+    setDetailText(message_detail_text, host_detail_text, date_detail_text, priority_detail_text,tag_detail_text);
+
 };
+
+/** Set the Detail Text. This is located below the data table **/
+function setDetailText(message, host, mydate, priority, tag) {
+
+    if(host.length > 0) {
+        host = host + ' | ';
+    }
+    
+    if(mydate.length > 0) {
+        mydate = mydate + ' | ';
+    }
+    
+    var message_detail = document.getElementById('message_detail');
+    message_detail.innerHTML = message;
+    
+    var host_detail = document.getElementById('host_detail');  
+    host_detail.innerHTML = host;
+    
+    var date_detail = document.getElementById('date_detail');  
+    date_detail.innerHTML = mydate;
+    
+    var priority_detail = document.getElementById('priority_detail');  
+    priority_detail.innerHTML = priority;
+    
+    var tag_detail = document.getElementById('tag_detail');  
+    tag_detail.innerHTML = tag;
+}
 
 /**
  * Sets the pageQueryClause and table options for a new page request.

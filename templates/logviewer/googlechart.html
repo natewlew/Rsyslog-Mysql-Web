@@ -6,12 +6,12 @@
 <style type="text/css">
 </style>
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-<script type="text/javascript" src="/rsyslog-mysql-web/site_media/js/gvis/gvis_rsyslog.js"></script>
+<script type="text/javascript" src="/site_media/js/gvis/gvis_rsyslog.js"></script>
 </head>
 <body>
 <script type="text/javascript">
     
-    var dataSourceUrl = 'http://zabbix/rsyslog-mysql-web/googlechart';
+    var dataSourceUrl = 'http://localhost:8000/googlechart';
     var elementID = 'rsyslog';
     var default_page = 20;
     var showRowNumber = true;
@@ -21,7 +21,7 @@
 
 <h1>Rsylog Mysql Web</h1>
 <form action="">
-  Number of rows to show:
+  Rows per page:
   <select onChange="setOption('pageSize', parseInt(this.value, 10))">
     <option value="20">20</option>
     <option value="30">30</option>
@@ -33,7 +33,18 @@
 </form>
 <br />
 <div id="rsyslog" ></div>
-<div id="message_detail" ></div>
+<h3>Event Detail</h3>
+<div style="border-style:solid; border-width: 1px; border-color: light-grey; padding: 5px;">
+<p>
+<i id="date_detail"></i> 
+<i id="host_detail"></i> 
+<i id="priority_detail"></i>
+</p>
+<p id="tag_detail"></p>
+<p>
+<b id="message_detail"></b>
+</p>
+</div>
 </body>
 </html>
 

@@ -121,13 +121,19 @@ def googlechart(request):
     import gviz_api
     from django.http import HttpResponse
     
+    #import pdb; pdb.set_trace()
+    
     columns = set(request.GET.get('tq', '').split(','))
     split_colums = "";
     params = {}
     
+    # Default Params
     page = ""
     rows = ""
+    orderby = ""
+    direction = ""
     
+    # Create params from tq split
     for column in columns:
         split_columns = column.split(':')
         
@@ -136,21 +142,37 @@ def googlechart(request):
         except:
             pass
     
-    queryset = Systemevents.objects.all().order_by('-id').select_related("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
+    # Set order by and direction params
+    try:
+        orderby = params['orderby']
+        direction = params['direction']
+    except:
+        pass
+        
+    if len(orderby) == 0:
+        orderby = "-id" # Set default orderby if orderby param is not set
+    else: # If orderby is set
+        if len(direction) > 0: # if direction is set
+            if direction == "desc": # if direction is desc add the minus sign else leave is alone
+                orderby = "-%s" % orderby
 
+    # set page and row params
     try:
         page = params['page']
         rows = params['rows']
     except:
         pass
-        
-    #import pdb; pdb.set_trace()
     
+    # if rows is not an integer, set it to 20
     try:
-	    rows=int(rows)
+	    rows=int(rows) 
     except:
-	    rows = 15
+	    rows = 20
         
+    # Get the query set
+    queryset = Systemevents.objects.all().order_by(orderby).select_related("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
+    
+    # Set the paginator
     paginator = Paginator(queryset, rows)
     
     try:
@@ -163,10 +185,8 @@ def googlechart(request):
         limited_query = paginator.page(paginator.num_pages)
      
     #return HttpResponse(queryset.query)
-    
-    all_fields = Systemevents._meta.get_all_field_names()
 
-    # Always add the date column
+    # Set the fields for the table header
     description = {}
     description['id'] = ('number', 'ID')
     description['devicereportedtime'] = ('datetime', 'Reported Time')
@@ -179,14 +199,16 @@ def googlechart(request):
 
     myvalues = {}
     
+    # Set the google datatable
     data_table = gviz_api.DataTable(description)
     
+    # Populate the data in the table
     for query in limited_query:     
-    
-        mymessage = "%s ...." % query.message[:120]
         
-        if(len(mymessage) > 120):
-            mymessage = mymessage
+        if(len(query.message) > 120):
+            mymessage = "%s ...." % query.message[:120] # trim the message if it is greater than 120 chars
+        else:
+            mymessage = query.message # leave it alone
         
         myvalues = {'id': query.id,
                     'devicereportedtime': query.devicereportedtime,
