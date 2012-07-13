@@ -105,6 +105,12 @@ INSERT INTO `priorites` (`num`, `severity`) VALUES
 (6, 'Informational'),
 (7, 'Debug');
 
+--
+-- Create Indexes on System Events
+--
+CREATE INDEX `DeviceReportedTime_Index` ON SystemEvents (`DeviceReportedTime`,`Facility`,`Priority`,`FromHost`,`SysLogTag`);
+CREATE FULLTEXT INDEX `Message_Index` ON SystemEvents (`Message`);
+  
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

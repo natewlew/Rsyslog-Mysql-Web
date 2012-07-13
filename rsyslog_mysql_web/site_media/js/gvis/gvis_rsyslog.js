@@ -1,9 +1,17 @@
+/**
+    Google Visualization code
+**/
+
 google.load('visualization', '1', {'packages' : ['table']});
 google.setOnLoadCallback(init);
 
+/**
+    Init Fuction to Start Building Table
+**/
 function init() {
-
-  setDetailText("", "", "", "", "", ""); // Clear the detail text
+  
+  // Update Refesh Time
+  setTimeOnElem('refresh_time');
   
   query = new google.visualization.Query(dataSourceUrl);
   container = document.getElementById(elementID);
@@ -11,18 +19,18 @@ function init() {
   sendAndDraw();
 }
 
+/**
+    Create the Wrapper
+**/
 function sendAndDraw() {
   query.abort();
   var tableQueryWrapper = new TableQueryWrapper(query, container, options);
   tableQueryWrapper.sendAndDraw();
 }
 
-
-function setOption(prop, value) {
-  options[prop] = value;
-  sendAndDraw();
-}
-
+/**
+    Wrapper Function
+**/
 var TableQueryWrapper = function(query, container, options) {
 
   this.table = new google.visualization.Table(container);
@@ -72,12 +80,22 @@ TableQueryWrapper.prototype.sendAndDraw = function() {
                     getTextboxQuery('priority','priority') + 
                     getTextboxQuery('syslogtag','syslogtag') + 
                     getTextboxQuery('message','message') + 
+                    getTextboxQuery('operator','operator') + 
+                    formatQueryParam('export_format', export_format) +
                     this.sortQueryClause + 
                     this.pageQueryClause;
   this.query.setQuery(queryClause);
   this.table.setSelection([]);
   var self = this;
-  this.query.send(function(response) {self.handleResponse(response)});
+  
+  if(export_format.length > 0) { // Export. Disable Table fill
+  
+    export_format = ""; // Reset export format
+    window.location = dataSourceUrl + "/?tq=" + queryClause
+    
+  } else { // Not an Export. Do standard function
+    this.query.send(function(response) {self.handleResponse(response)});
+  }
 };
 
 
@@ -135,6 +153,7 @@ TableQueryWrapper.prototype.handleSelect = function(properties) {
     var myrow = this.table.getSelection()[0].row;
     //alert('You selected ' + this.currentDataTable.getValue(myrow, 7));
     
+    // Set the Detail Message Text
     var message_detail_text = this.currentDataTable.getValue(myrow, 7);  
     var host_detail_text = this.currentDataTable.getValue(myrow, 4); 
     var facility_detail_text = this.currentDataTable.getValue(myrow, 2);
@@ -153,6 +172,7 @@ TableQueryWrapper.prototype.handleSelect = function(properties) {
  * Returns true if a new page query clause was set, false otherwise.
  */
 TableQueryWrapper.prototype.setPageQueryClause = function(pageIndex) {
+  
   var pageSize = this.pageSize;
 
   if (pageIndex < 0) {
@@ -164,6 +184,7 @@ TableQueryWrapper.prototype.setPageQueryClause = function(pageIndex) {
       return false;
     }
   }
+  
   this.currentPageIndex = pageIndex;
   var newStartRow = this.currentPageIndex * pageSize;
   // Get the pageSize + 1 so that we can know when the last page is reached.
@@ -184,6 +205,14 @@ TableQueryWrapper.clone = function(obj) {
   }
   return newObj;
 };
+
+/**
+    Sets the Options for the Table
+**/
+function setOption(prop, value) {
+  options[prop] = value;
+  sendAndDraw();
+}
 
 /**
     Format the colors for the Priority
@@ -277,6 +306,14 @@ function reset_page() {
     
     clear_form()
     
+    setDetailText("", "", "", "", "", ""); // Clear the detail text
+    
+    setTimer(null);
+    
+    clear_input_dropdown('pagesize', default_page);
+    clear_input_dropdown('refresh', "");
+    clear_input_dropdown('export', "");
+    
     init();
 }
 
@@ -302,6 +339,8 @@ function clear_form() {
     clear_input('facility');  
     clear_input('devicereportedtime_start');
     clear_input('devicereportedtime_end');
+    clear_input_dropdown('operator', 'or');
+    clear_input_dropdown('operator', 'or');
 }
 
 /**
@@ -319,9 +358,17 @@ function getTextboxQuery(elem, queryParam) {
     
     var element = document.getElementById(elem);
     
-    var textboxQuery = queryParam + '::' + element.value + ','
+    var textboxQuery = formatQueryParam(queryParam, element.value);
     
     return textboxQuery;
+}
+
+/**
+    Format Query Param: param::value,
+**/
+function formatQueryParam(param, value) {
+
+    return param + '::' + value + ',';
 }
 
 /**
@@ -333,6 +380,12 @@ function clear_input(elem) {
 
     var element = document.getElementById(elem);
     element.value = "";
+}
+
+function clear_input_dropdown(elem, value) {
+    
+    var element = document.getElementById(elem);
+    element.value = value;
     
 }
 
@@ -356,7 +409,109 @@ function append_query(query, elem) {
 
 }
 
+/**
+    Export Format: cvs,tvs
+**/
+var export_format = "";
 
+/**
+    Export to Spreadsheet
+    
+    @param string mytype - cvs,tvs
+**/
+function export_to_spreadsheet(mytype) {
+    
+    if(mytype) {
+        export_format = mytype;       
+        init();
+    }
+    
+    clear_input_dropdown('export', "");
+}
+
+/**
+    Timer Variables
+**/
+var time_interval = null
+var myTimerVal = null
+
+/**
+    Turn Timer on and off
+**/
+function initTimer() {
+
+    clearInterval(myTimerVal);
+    
+    if(isNaN(time_interval) && 
+       parseInt(time_interval)!=time_interval){
+         time_interval = null;
+    } else if(time_interval < 5000) {
+        time_interval = null;
+    }
+    
+    if(time_interval) {
+        myTimerVal=setInterval(function(){myTimer()},time_interval);
+    } 
+}
+
+/**
+    Timer Function. Refreshes page
+**/
+function myTimer() {
+    
+    init(); //refresh page
+}
+
+/**
+    Set the Timer
+    
+    @param int interval - Interval for timer in milliseconds
+**/
+function setTimer(interval) {
+
+    time_interval = interval;
+    
+    initTimer();  
+}
+
+/**
+    Show Refresh time for timer
+**/
+function setTimeOnElem(elem) {
+
+    var now=new Date();
+    var hour        = now.getHours();
+    var minute      = now.getMinutes();
+    var second      = now.getSeconds();
+    //var monthnumber = now.getMonth();
+    //var monthday    = now.getDate();
+    //var year        = now.getYear();
+    
+    // Conver to AM,PM
+    var ap = "AM";
+    
+    if (hour > 11) { 
+        ap = "PM";   
+    }
+    
+    if (hour > 12) { 
+        hour = hour - 12; 
+    }
+    
+    if (hour == 0) { 
+        hour = 12;        
+    }
+    
+    if (minute < 10) {
+        minute = '0' + minute;
+    }
+    
+    if (second < 10) {
+        second = '0' + second;
+    }
+
+    document.getElementById(elem).innerHTML = hour + ':' + minute + ':' + second + ' ' + ap;
+}
 
 
 

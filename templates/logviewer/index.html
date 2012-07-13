@@ -22,7 +22,7 @@
 <div class="detailbox">
 <form action="" onSubmit="return formsubmit();">
   <table cellpadding="0" cellspacing="0" class="tableform">
-  <tr> <!-- 12 -->
+  <tr>
   <th colspan="3" rowspan="2" class="tableformheader">Query Builder</th>
   <th>Start Date:</th>
   <td><input type="text" name="devicereportedtime_start" size="20" id="devicereportedtime_start"></td>
@@ -33,9 +33,11 @@
   <th>Facility:</th>
   <td><input type="text" name="facility" size="20" id="facility"></td>
   <td><input type="button" name="clear_facility" value="<" onClick="clear_input('facility')"></td>
-  <td colspan="7">&nbsp;</td>
+  <th rowspan="2">Message:</th>
+  <td rowspan="2"><textarea name="message" id="message" cols="50" rows="2"></textarea></td>
+  <td rowspan="2"><input type="button" name="clear_message" value="<" onClick="clear_input('message')"></td>
   </tr>
-  <tr> <!-- 19 -->
+  <tr>
   <th>Host:</th>
   <td><input type="text" name="fromhost" size="20" id="fromhost"></td>
   <td><input type="button" name="clear_fromhost" value="<" onClick="clear_input('fromhost')"></td>
@@ -45,19 +47,50 @@
   <th>Tag:</th>
   <td><input type="text" name="syslogtag" size="20" id="syslogtag"></td>
   <td><input type="button" name="clear_syslogtag" value="<" onClick="clear_input('syslogtag')"></td>
-  <th>Message:</th>
-  <td><input type="text" name="message" size="20" id="message"></td>
-  <td><input type="button" name="clear_message" value="<" onClick="clear_input('message')"></td>
-  <td><input type="submit" name="submit" value="Submit"></td>
-  <td><input type="button" name="reset" value="Reset" onClick="reset_page()"></td>
-  <th>Rows per page:</th>
-  <td><select onChange="setOption('pageSize', parseInt(this.value, 10))">
-    <option value="20">20</option>
-    <option value="30">30</option>
-    <option value="50">50</option>
-    <option value="75">75</option>
-    <option value="100">100</option>
-  </select></th>
+  </tr>
+  <tr>
+  <td colspan="3">&nbsp;</td>
+  <td colspan="14" align="right">
+      <table>
+      <tr>
+      <th>SQL Operator:</th>
+      <td><select name="operator" id="operator">
+        <option value="or">Or</option>
+        <option value="and">And</option>
+      </select></td>
+      <td><input type="submit" name="submit" value="Submit"></td>
+      <td><input type="button" name="reset" value="Reset" onClick="reset_page()"></td>
+      <td><input type="button" name="clear" value="Clear Form" onClick="clear_form()"></td>
+      <th>Rows per page:</th>
+      <td><select id="pagesize" onChange="setOption('pageSize', parseInt(this.value, 10))">
+        <option value="20">20</option>
+        <option value="30">30</option>
+        <option value="50">50</option>
+        <option value="75">75</option>
+        <option value="100">100</option>
+      </select></th>
+      <th>Refresh:</th>
+      <td><select id="refresh" onChange="setTimer(this.value)">
+        <option value="">Off</option>
+        <option value="10000">10 sec</option>
+        <option value="20000">20 sec</option>
+        <option value="30000">30 sec</option>
+        <option value="45000">45 sec</option>
+        <option value="60000">1 min</option>
+        <option value="90000">1 1/2 min</option>
+        <option value="120000">2 min</option>
+        <option value="300000">5 min</option>
+      </select></th>
+      <th colspan="2">Time: (<i id="refresh_time"></i>) </th>
+      <th>Export:</th>
+      <td><select id="export" onChange="export_to_spreadsheet(this.value)">
+        <option value=""></option>
+        <option value="csv">CSV</option>
+        <option value="tsv">TSV (Excel)</option>
+      </select></td>
+      </tr>
+      </table>
+  </td>
   </tr>
   </table>
 </form>

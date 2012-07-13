@@ -80,12 +80,18 @@ def rsyslogjson(request):
     facility = param_helper.getStringParam(params, 'facility', '') 
     message = param_helper.getStringParam(params, 'message', '')
     
+    operator = param_helper.getStringParam(params, 'operator', '')
+    
     rows = param_helper.getIntParam(params, 'rows', 20) # if rows is not an int, set it to 20  
     page = param_helper.getIntParam(params, 'page', 1) # if page is not an int, set it to 1
     
-    query_helper = queryHelper()
+    export_format = param_helper.getStringParam(params, 'export_format', '')
     
-    #import pdb; pdb.set_trace()
+    # Make sure correct export value is set
+    if export_format != 'csv' and export_format != 'tsv': 
+        export_format = '';
+    
+    query_helper = queryHelper()
     
     query_helper.setQueryDateRange('devicereportedtime', devicereportedtime_start, devicereportedtime_end)
     
@@ -95,23 +101,32 @@ def rsyslogjson(request):
     query_helper.setQueryList(facility, 'facility__facility')
     query_helper.setQueryList(message, 'message')
     
+    query_helper.setOperator(operator) # set the and,or operator before get_list
+    
     list_in_txt = query_helper.get_list_in()
     list_ex_txt = query_helper.get_list_ex()
       
     # Get the query set
     queryset = Systemevents.objects.filter( list_in_txt ).exclude( list_ex_txt ).order_by(orderby).all().select_related("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
     
-    # Set the paginator
-    paginator = Paginator(queryset, rows)
+    # Export is not set. Do standard Page
+    if len(export_format) == 0:
     
-    try:
-        limited_query = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        limited_query = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        limited_query = paginator.page(paginator.num_pages)
+        # Set the paginator
+        paginator = Paginator(queryset, rows)
+        
+        try:
+            limited_query = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            limited_query = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            limited_query = paginator.page(paginator.num_pages)
+     
+    # Export is Set. Do not Page but limit query       
+    else:
+       limited_query = queryset[:2000]
      
     #return HttpResponse(queryset.query)
 
@@ -151,8 +166,32 @@ def rsyslogjson(request):
         
         data_table.AppendData([myvalues])
 
-    return HttpResponse(data_table.ToResponse(columns_order=("id","devicereportedtime","facility","priority","fromhost","syslogtag","message","messagefull"), 
-                                              tqx=request.GET.get('tqx', '')))
+    #import pdb; pdb.set_trace()
+    
+    # Export to CSV
+    if export_format == 'csv':
+    
+        my_data = data_table.ToCsv(columns_order=("id","devicereportedtime","facility","priority","fromhost","syslogtag","messagefull"))
+        
+        response = HttpResponse(my_data, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=syslog_export.csv'
+    
+        return response
+        
+    # Export to TSV
+    if export_format == 'tsv':
+    
+        my_data = data_table.ToTsvExcel(columns_order=("id","devicereportedtime","facility","priority","fromhost","syslogtag","messagefull"))
+        
+        response = HttpResponse(my_data, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=syslog_export_excel.csv'
+    
+        return response
+        
+    # Default: Export to Table
+    else: 
+        return HttpResponse(data_table.ToResponse(columns_order=("id","devicereportedtime","facility","priority","fromhost","syslogtag","message","messagefull"), 
+                                                  tqx=request.GET.get('tqx', '')))
     
     
     
