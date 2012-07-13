@@ -3,7 +3,7 @@ google.setOnLoadCallback(init);
 
 function init() {
 
-  setDetailText("", "", "", "", ""); // Clear the detail text
+  setDetailText("", "", "", "", "", ""); // Clear the detail text
   
   query = new google.visualization.Query(dataSourceUrl);
   container = document.getElementById(elementID);
@@ -64,7 +64,13 @@ var TableQueryWrapper = function(query, container, options) {
  */
 TableQueryWrapper.prototype.sendAndDraw = function() {
   this.query.abort();
-  var queryClause = getFormQuery() + this.sortQueryClause + this.pageQueryClause;
+  var queryClause = getTextboxQuery('facility','facility') + 
+                    getTextboxQuery('fromhost','fromhost') + 
+                    getTextboxQuery('priority','priority') + 
+                    getTextboxQuery('syslogtag','syslogtag') + 
+                    getTextboxQuery('message','message') + 
+                    this.sortQueryClause + 
+                    this.pageQueryClause;
   this.query.setQuery(queryClause);
   this.table.setSelection([]);
   var self = this;
@@ -84,28 +90,7 @@ TableQueryWrapper.prototype.handleResponse = function(response) {
     this.view = new google.visualization.DataView(this.currentDataTable);
     this.view.setColumns([0,1,2,3,4,5,6]);
     
-    /*
-    Priority Conditional Formating
-    0	Emergency //brown #917171
-    1	Alert // dark red #B23232
-    2	Critical //red #FF4747
-    3	Error //pink #FFC0C0
-    4	Warning //orange #FFCD82
-    5	Notice // blue #94DBFF
-    6	Informational //green #85FF85
-    7	Debug //yellow #FFFF4D
-    */
-                    
-    var formatter = new google.visualization.ColorFormat();
-    formatter.addRange("Emergency", "Emergency-1", 'white', '#917171');
-    formatter.addRange("Alert", "Alert-1", 'white', '#B23232');
-    formatter.addRange("Critical", "Critical-1", 'white', '#FF4747');
-    formatter.addRange("Error", "Error-1", 'black', '#FFC0C0');
-    formatter.addRange("Warning", "Warning-1", 'black', '#FFCD82');
-    formatter.addRange("Notice", "Notice-1", 'white', '#94DBFF');
-    formatter.addRange("Informational", "Informational-1", 'white', '#85FF85');
-    formatter.addRange("Debug", "Debug-1", 'white', '#FFFF4D');
-    formatter.format(this.currentDataTable, 3);
+    formatPriority(this.currentDataTable, 3); // Format the Priority Column
   
     this.table.draw(this.view, this.tableOptions);
   
@@ -130,7 +115,7 @@ TableQueryWrapper.prototype.handleSort = function(properties) {
 /** Handles a page event with the given properties. */
 TableQueryWrapper.prototype.handlePage = function(properties) {
 
-  setDetailText("", "", "", "", ""); // Clear the detail text
+  setDetailText("", "", "", "", "", ""); // Clear the detail text
   
   var localTableNewPage = properties['page']; // 1, -1 or 0
   var newPage = 0;
@@ -149,48 +134,14 @@ TableQueryWrapper.prototype.handleSelect = function(properties) {
     
     var message_detail_text = this.currentDataTable.getValue(myrow, 7);  
     var host_detail_text = this.currentDataTable.getValue(myrow, 4); 
+    var facility_detail_text = this.currentDataTable.getValue(myrow, 2);
     var date_detail_text = this.currentDataTable.getValue(myrow, 1);  
     var priority_detail_text = this.currentDataTable.getValue(myrow, 3);
     var tag_detail_text = this.currentDataTable.getValue(myrow, 5);
     
-    setDetailText(message_detail_text, host_detail_text, date_detail_text, priority_detail_text,tag_detail_text);
+    setDetailText(message_detail_text, host_detail_text, date_detail_text, priority_detail_text,tag_detail_text,facility_detail_text);
 
 };
-
-/** Set the Detail Text. This is located below the data table **/
-function setDetailText(mymessage, host, mydate, priority, tag) {
-
-    var host_query_helper = ""
-    var priority_query_helper = ""
-    var tag_query_helper = ""
-    
-    if(mymessage.length > 0) {
-    
-        host_query_helper = '<input type="button" value="Search" onClick="append_host_query(\'' + host + '\')"> <input type="button" value="Exclude" onClick="append_host_query(\'-' + host + '\')"> '
-        
-        priority_query_helper = '<input type="button" value="Search" onClick="append_priority_query(\'' + priority + '\')"> <input type="button" value="Exclude" onClick="append_priority_query(\'-' + priority + '\')"> '
-        
-        tag_query_helper = '<input type="button" value="Search" onClick="append_tag_query(\'' + tag + '\')"> <input type="button" value="Exclude" onClick="append_tag_query(\'-' + tag + '\')"> '
-    }
-    
-    
-    
-    var message_detail = document.getElementById('message_detail');
-    message_detail.innerHTML = mymessage;
-    
-    var host_detail = document.getElementById('host_detail');  
-    host_detail.innerHTML = host_query_helper + host;
-    
-    var date_detail = document.getElementById('date_detail');  
-    date_detail.innerHTML = mydate;
-    
-    var priority_detail = document.getElementById('priority_detail'); 
-      
-    priority_detail.innerHTML = priority_query_helper + priority;
-    
-    var tag_detail = document.getElementById('tag_detail');  
-    tag_detail.innerHTML = tag_query_helper + tag;
-}
 
 /**
  * Sets the pageQueryClause and table options for a new page request.
@@ -231,6 +182,94 @@ TableQueryWrapper.clone = function(obj) {
   return newObj;
 };
 
+/**
+    Format the colors for the Priority
+    
+    Priority Conditional Formating
+    0	Emergency //brown #917171
+    1	Alert // dark red #B23232
+    2	Critical //red #FF4747
+    3	Error //pink #FFC0C0
+    4	Warning //orange #FFCD82
+    5	Notice // blue #94DBFF
+    6	Informational //green #85FF85
+    7	Debug //yellow #FFFF4D
+**/
+    
+function formatPriority(table, columnID) {
+                   
+    var formatter = new google.visualization.ColorFormat();
+    formatter.addRange("Emergency", "Emergency-1", 'white', '#917171');
+    formatter.addRange("Alert", "Alert-1", 'white', '#B23232');
+    formatter.addRange("Critical", "Critical-1", 'white', '#FF4747');
+    formatter.addRange("Error", "Error-1", 'black', '#FFC0C0');
+    formatter.addRange("Warning", "Warning-1", 'black', '#FFCD82');
+    formatter.addRange("Notice", "Notice-1", 'white', '#94DBFF');
+    formatter.addRange("Informational", "Informational-1", 'white', '#85FF85');
+    formatter.addRange("Debug", "Debug-1", 'white', '#FFFF4D');
+    formatter.format(table, columnID);
+    
+}
+
+/** 
+
+    Set the Detail Text. This is located below the data table 
+    
+    @param string mymessage - Message String
+    @param string host - From Host
+    @param string mydate - Date
+    @param string priority - Priority
+    @param string tag - Syslog Tag
+    @param string facility - Facility String
+    
+**/
+function setDetailText(mymessage, host, mydate, priority, tag, facility) {
+
+    var host_query_helper = ""
+    var facility_query_helper = ""
+    var priority_query_helper = ""
+    var tag_query_helper = ""
+    
+    // Set Query Helpers
+    if(mymessage.length > 0) {
+    
+        host_query_helper = '<input type="button" value="Search" onClick="append_query(\'' + host + '\', \'fromhost\')">'
+        host_query_helper += '<input type="button" value="Exclude" onClick="append_query(\'--' + host + '\', \'fromhost\')"> '
+        
+        facility_query_helper = '<input type="button" value="Search" onClick="append_query(\'' + facility + '\', \'facility\')">'
+        facility_query_helper += '<input type="button" value="Exclude" onClick="append_query(\'--' + facility + '\', \'facility\')"> '
+        
+        priority_query_helper = '<input type="button" value="Search" onClick="append_query(\'' + priority + '\', \'priority\')">'
+        priority_query_helper += '<input type="button" value="Exclude" onClick="append_query(\'--' + priority + '\', \'priority\')"> '
+        
+        tag_query_helper = '<input type="button" value="Search" onClick="append_query(\'' + tag + '\', \'syslogtag\')">'
+        tag_query_helper += '<input type="button" value="Exclude" onClick="append_query(\'--' + tag + '\', \'syslogtag\')"> '
+        
+    }
+    
+    
+    var message_detail = document.getElementById('message_detail');
+    message_detail.innerHTML = mymessage;
+    
+    var host_detail = document.getElementById('host_detail');  
+    host_detail.innerHTML = host_query_helper + host;
+    
+    var facility_detail = document.getElementById('facility_detail');  
+    facility_detail.innerHTML = facility_query_helper + facility;
+    
+    var date_detail = document.getElementById('date_detail');  
+    date_detail.innerHTML = mydate;
+    
+    var priority_detail = document.getElementById('priority_detail');   
+    priority_detail.innerHTML = priority_query_helper + priority;
+    
+    var tag_detail = document.getElementById('tag_detail');  
+    tag_detail.innerHTML = tag_query_helper + tag;
+}
+
+/**
+    Reset Page to start
+**/
 function reset_page() {
     
     clear_form()
@@ -238,6 +277,9 @@ function reset_page() {
     init();
 }
 
+/**
+    Submit Form
+**/
 function formsubmit() {
     
     init();
@@ -245,61 +287,71 @@ function formsubmit() {
     return false;
 }
 
+/**
+    Clear Form
+**/
 function clear_form() {
 
     clear_input('fromhost');
     clear_input('priority');
     clear_input('syslogtag');
+    clear_input('message');
+    clear_input('facility');
 }
 
-function getFormQuery() {
+/**
+    old: getFormQuery
     
-    var fromhost = document.getElementById('fromhost');
+    Set a Textbox Query
     
-    var fromhostQuery = 'fromhost::' + fromhost.value + ','
+    @param string elem - Element ID
+    @param string queryParam - Actual Query Param
     
-    return fromhostQuery;
+    Example: fromhost, myhost would return: fromhost::myhost,
+    
+**/
+function getTextboxQuery(elem, queryParam) {
+    
+    var element = document.getElementById(elem);
+    
+    var textboxQuery = queryParam + '::' + element.value + ','
+    
+    return textboxQuery;
 }
 
-function clear_input(input) {
+/**
+    Clear an elements value
+    
+    @param string input - Element ID
+**/
+function clear_input(elem) {
 
-    var element = document.getElementById(input);
+    var element = document.getElementById(elem);
     element.value = "";
     
 }
 
-function append_host_query(host) {
+/**
+    Appends the query to a search box.
+    
+    If a value is empty it adds the value, if it is not it appends the query using "||"
+    
+    @param string query - Query String
+    @param string elem - Element ID
+**/
+function append_query(query, elem) {
 
-    var element = document.getElementById('fromhost');
+    var element = document.getElementById(elem);
     
     if(element.value.length > 0) {
-        element.value = element.value + '||' + host;
+        element.value = element.value + '||' + query;
     } else {
-        element.value = host;
+        element.value = query;
     }
 
 }
 
-function append_priority_query(priority) {
 
-    var element = document.getElementById('priority');
-    
-    if(element.value.length > 0) {
-        element.value = element.value + '||' + priority;
-    } else {
-        element.value = priority;
-    }
 
-}
 
-function append_tag_query(tag) {
 
-    var element = document.getElementById('syslogtag');
-    
-    if(element.value.length > 0) {
-        element.value = element.value + '||' + tag;
-    } else {
-        element.value = tag;
-    }
-
-}

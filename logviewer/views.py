@@ -21,6 +21,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
 from django.db.models import Q
 import operator
+from logviewer.utils import queryHelper, paramHelper
 
 template="logviewer"
 
@@ -41,8 +42,6 @@ def rsyslogjson(request):
     params = {}
     
     # Default Params
-    page = ""
-    rows = ""
     orderby = ""
     direction = ""
     
@@ -68,55 +67,40 @@ def rsyslogjson(request):
         if len(direction) > 0: # if direction is set
             if direction == "desc": # if direction is desc add the minus sign else leave is alone
                 orderby = "-%s" % orderby
-
-    # set page and row params
-    try:
-        page = params['page']
-        rows = params['rows']
-    except:
-        pass
-    
-    # if rows is not an integer, set it to 20
-    try:
-	    rows=int(rows)
-    except:
-	    rows = 20
-    
-    list_in = []
-    list_ex = []
     
 	# Set form Values
-    try:
-        fromhost = params['fromhost']
-    except:
-        pass
+        
+    param_helper = paramHelper()
     
-    split_hosts = fromhost.split('||')
+    fromhost = param_helper.getStringParam(params, 'fromhost', '')
     
-    for hosts in split_hosts:
+    priority = param_helper.getStringParam(params, 'priority', '')
     
-        if len(hosts) > 0:
-            if hosts.startswith("-"):
-                #not equal to
-                list_ex.append( Q(**{'fromhost__icontains':hosts[1:]} ) ) 
-            else:
-                #equal to
-                list_in.append( Q(**{'fromhost__icontains':hosts} ) ) 
+    syslogtag = param_helper.getStringParam(params, 'syslogtag', '')
     
-    list_in_txt = Q()
-    list_ex_txt = Q()
-       
-    if len(list_in) > 0:
-        list_in_txt = reduce(operator.or_, list_in)
+    facility = param_helper.getStringParam(params, 'facility', '')
     
-    if len(list_ex) > 0:
-        list_ex_txt = reduce(operator.or_, list_ex)
+    message = param_helper.getStringParam(params, 'message', '')
+    
+    rows = param_helper.getIntParam(params, 'rows', 20) # if rows is not an int, set it to 20
+    
+    page = param_helper.getIntParam(params, 'page', 1) # if page is not an int, set it to 1
+    
+    query_helper = queryHelper()
     
     #import pdb; pdb.set_trace()
+    
+    query_helper.setQueryList(fromhost, 'fromhost')
+    query_helper.setQueryList(priority, 'priority__severity')
+    query_helper.setQueryList(syslogtag, 'syslogtag')
+    query_helper.setQueryList(facility, 'facility__facility')
+    query_helper.setQueryList(message, 'message')
+    
+    list_in_txt = query_helper.get_list_in()
+    list_ex_txt = query_helper.get_list_ex()
       
     # Get the query set
-    queryset = Systemevents.objects.filter( list_in_txt ).exclude( list_ex_txt ).order_by(orderby).all()
-    #.select_related("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
+    queryset = Systemevents.objects.filter( list_in_txt ).exclude( list_ex_txt ).order_by(orderby).all().select_related("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
     
     # Set the paginator
     paginator = Paginator(queryset, rows)

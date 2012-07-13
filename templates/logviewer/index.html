@@ -21,12 +21,16 @@
 <h1>Rsylog Mysql Web</h1>
 <div class="detailbox">
 <form action="" onSubmit="return formsubmit();">
+  Facility: <input type="text" name="facility" size="20" id="facility">
+  <input type="button" name="clear_facility" value="<" onClick="clear_input('facility')">
   Host: <input type="text" name="fromhost" size="20" id="fromhost">
   <input type="button" name="clear_fromhost" value="<" onClick="clear_input('fromhost')">
   Priority: <input type="text" name="priority" size="20" id="priority">
   <input type="button" name="clear_priority" value="<" onClick="clear_input('priority')">
   Tag: <input type="text" name="syslogtag" size="20" id="syslogtag">
   <input type="button" name="clear_syslogtag" value="<" onClick="clear_input('syslogtag')">
+  Message: <input type="text" name="message" size="20" id="message">
+  <input type="button" name="clear_message" value="<" onClick="clear_input('message')">
   <input type="submit" name="submit" value="Submit">
   <input type="button" name="reset" value="Reset" onClick="reset_page()">
   &nbsp; Rows per page:
@@ -44,6 +48,7 @@
 <div class="detailbox">
 <p>
 <i id="date_detail"></i><br />
+<i id="facility_detail"></i><br />
 <i id="host_detail"></i><br />
 <i id="priority_detail"></i><br />
 </p>
