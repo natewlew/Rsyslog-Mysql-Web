@@ -39,7 +39,10 @@ DATABASES = {
 
 #############
 ## Rsyslog-Mysql-Web Custom settings
-SITE_URL = "http://zabbix/rsyslog-mysql-web/"
+if DEBUG:
+    SITE_URL = "http://localhost:8000/"
+else:
+    SITE_URL = "http://zabbix/rsyslog-mysql-web/"
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -112,7 +115,7 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'dojango.middleware.DojoCollector',
+    #'dojango.middleware.DojoCollector',
     
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -132,8 +135,8 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    "/opt/python/rsyslog_mysql_web/templates"
-    #'/opt/Source/rsyslog_mysql_web/templates'
+    "/opt/python/rsyslog_mysql_web/templates",
+    "/opt/Source/Rsyslog-Mysql-Web/templates"
 )
 
 INSTALLED_APPS = (
@@ -147,8 +150,8 @@ INSTALLED_APPS = (
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
-    'dojango',
-    'datable',
+    #'dojango',
+    #'datable',
 )
 
 # A sample logging configuration. The only tangible logging

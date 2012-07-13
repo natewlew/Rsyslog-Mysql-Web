@@ -72,23 +72,22 @@ def rsyslogjson(request):
         
     param_helper = paramHelper()
     
-    fromhost = param_helper.getStringParam(params, 'fromhost', '')
-    
-    priority = param_helper.getStringParam(params, 'priority', '')
-    
-    syslogtag = param_helper.getStringParam(params, 'syslogtag', '')
-    
-    facility = param_helper.getStringParam(params, 'facility', '')
-    
+    devicereportedtime_start = param_helper.getStringParam(params, 'devicereportedtime_start', '')   
+    devicereportedtime_end = param_helper.getStringParam(params, 'devicereportedtime_end', '')     
+    fromhost = param_helper.getStringParam(params, 'fromhost', '')   
+    priority = param_helper.getStringParam(params, 'priority', '') 
+    syslogtag = param_helper.getStringParam(params, 'syslogtag', '')  
+    facility = param_helper.getStringParam(params, 'facility', '') 
     message = param_helper.getStringParam(params, 'message', '')
     
-    rows = param_helper.getIntParam(params, 'rows', 20) # if rows is not an int, set it to 20
-    
+    rows = param_helper.getIntParam(params, 'rows', 20) # if rows is not an int, set it to 20  
     page = param_helper.getIntParam(params, 'page', 1) # if page is not an int, set it to 1
     
     query_helper = queryHelper()
     
     #import pdb; pdb.set_trace()
+    
+    query_helper.setQueryDateRange('devicereportedtime', devicereportedtime_start, devicereportedtime_end)
     
     query_helper.setQueryList(fromhost, 'fromhost')
     query_helper.setQueryList(priority, 'priority__severity')

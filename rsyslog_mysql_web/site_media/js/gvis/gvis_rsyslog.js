@@ -49,6 +49,7 @@ var TableQueryWrapper = function(query, container, options) {
   options[buttonConfig] = options[buttonConfig] || 'both';
   options['pageSize'] = (options['pageSize'] > 0) ? options['pageSize'] : default_page;
   options['allowHtml'] = true;
+  options['pagingSymbols'] = {next: 'next', prev: 'prev'};
   this.pageSize = options['pageSize'];
   this.tableOptions = options;
   this.currentPageIndex = 0;
@@ -64,7 +65,9 @@ var TableQueryWrapper = function(query, container, options) {
  */
 TableQueryWrapper.prototype.sendAndDraw = function() {
   this.query.abort();
-  var queryClause = getTextboxQuery('facility','facility') + 
+  var queryClause = getTextboxQuery('devicereportedtime_start','devicereportedtime_start') + 
+                    getTextboxQuery('devicereportedtime_end','devicereportedtime_end') + 
+                    getTextboxQuery('facility','facility') + 
                     getTextboxQuery('fromhost','fromhost') + 
                     getTextboxQuery('priority','priority') + 
                     getTextboxQuery('syslogtag','syslogtag') + 
@@ -296,7 +299,9 @@ function clear_form() {
     clear_input('priority');
     clear_input('syslogtag');
     clear_input('message');
-    clear_input('facility');
+    clear_input('facility');  
+    clear_input('devicereportedtime_start');
+    clear_input('devicereportedtime_end');
 }
 
 /**
