@@ -1,4 +1,24 @@
+/**
+This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gmail.com>
 
+    Rsyslog Mysql Web is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Rsyslog Mysql Web is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Rsyslog Mysql Web.  If not, see <http://www.gnu.org/licenses/>.
+**/
+
+/**
+    Default Style
+**/
+    
 .detailbox {
     border-style:solid; 
     border-width: 1px; 
@@ -7,6 +27,7 @@
     background-color: #f9fafd;
     font-family: "Times New Roman", Times, serif;
     font-size: 14px;
+    width: 1465px;
 }
 
 .messagedetail {
@@ -17,6 +38,7 @@
     background-color: white;
     font-family: "Times New Roman", Times, serif;
     font-size: 14px;
+    width: 1465px;
 }
 
 .tableform th {
@@ -27,3 +49,40 @@
     text-align: left;
     font-size: 18px;
 }
+
+/**
+    Prority Formaters
+**/
+.priority-emergency {
+    background-color: #917171;
+    color: white;
+}
+.priority-alert {
+    background-color: #B23232;
+    color: white;
+}
+.priority-critical {
+    background-color: #FF4747;
+    color: white;
+}
+.priority-error {
+    background-color: #FFC0C0;
+    color: black;
+}
+.priority-warning {
+    background-color: #FFCD82;
+    color: black;
+}
+.priority-notice {
+    background-color: #94DBFF;
+    color: white;
+}
+.priority-informational {
+    background-color: #85FF85;
+    color: white;
+}
+.priority-debug {
+    background-color: #FFFF4D;
+    color: white;
+}
+

@@ -62,7 +62,7 @@ class queryHelper():
     def setQueryDateRange(self, column, start, end):
         """
         Set the Date Range on a Column
-        """
+        """        
         if len(start) > 0 and len(end) > 0:
             contains = '%s__range' % column
             self.list_in.append( Q(**{contains:[start, end]} ) )
@@ -95,33 +95,6 @@ class queryHelper():
     def get_list_in(self):
      
         return self.getReduceQuery(self.list_in)
-             
-class paramHelper():
-    """
-    Get the Value from a Param
-    """ 
-        
-    def getStringParam(self, params, param_name, default):
-        """
-        Get Value from String Param
-        """
-        try:
-            default = params[param_name]
-        except:
-            pass
-            
-        return default
-        
-    def getIntParam(self, params, param_name, default):
-        """
-        Get Value from Int Param
-        """   
-        try:
-            default = int(params[param_name])
-        except:
-            pass
-
-        return default
             
         
         

@@ -19,77 +19,27 @@ from django.shortcuts import render_to_response
 from logviewer.models import Systemevents, Facilities, Priorites
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
-from django.db.models import Q
-import operator
-from logviewer.utils import queryHelper, paramHelper
+from logviewer.utils import queryHelper
+from django.http import HttpResponse
+import simplejson
 
 template="logviewer"
-
+                                                 
 def index(request):
 
-    return render_to_response(template + '/index.html', {'SITE_URL': settings.SITE_URL, 'MEDIA_URL': settings.MEDIA_URL})    
-    
-    
-def rsyslogjson(request):
+        return render_to_response(template + '/flexgrid.html', {'SITE_URL': settings.SITE_URL, 'MEDIA_URL': settings.MEDIA_URL}) 
+        
+def flexigridajax(request):
 
-    import gviz_api
-    from django.http import HttpResponse
+    devicereportedtime_start = request.GET.get('devicereportedtime_start', '')  
+    devicereportedtime_end = request.GET.get('devicereportedtime_end', '')       
+    fromhost = request.GET.get('fromhost', '')   
+    priority = request.GET.get('priority', '')   
+    syslogtag = request.GET.get('syslogtag', '')   
+    facility = request.GET.get('facility', '')   
+    message = request.GET.get('message', '')   
     
-    #import pdb; pdb.set_trace()
-    
-    columns = set(request.GET.get('tq', '').split(','))
-    split_colums = "";
-    params = {}
-    
-    # Default Params
-    orderby = ""
-    direction = ""
-    
-    # Create params from tq split
-    for column in columns:
-        split_columns = column.split('::')
-        
-        try:
-            params[split_columns[0].strip()] = split_columns[1].strip()
-        except:
-            pass
-    
-    # Set order by and direction params
-    try:
-        orderby = params['orderby']
-        direction = params['direction']
-    except:
-        pass
-        
-    if len(orderby) == 0:
-        orderby = "-id" # Set default orderby if orderby param is not set
-    else: # If orderby is set
-        if len(direction) > 0: # if direction is set
-            if direction == "desc": # if direction is desc add the minus sign else leave is alone
-                orderby = "-%s" % orderby
-    
-	# Set form Values
-        
-    param_helper = paramHelper()
-    
-    devicereportedtime_start = param_helper.getStringParam(params, 'devicereportedtime_start', '')   
-    devicereportedtime_end = param_helper.getStringParam(params, 'devicereportedtime_end', '')     
-    fromhost = param_helper.getStringParam(params, 'fromhost', '')   
-    priority = param_helper.getStringParam(params, 'priority', '') 
-    syslogtag = param_helper.getStringParam(params, 'syslogtag', '')  
-    facility = param_helper.getStringParam(params, 'facility', '') 
-    message = param_helper.getStringParam(params, 'message', '')
-    
-    operator = param_helper.getStringParam(params, 'operator', '')
-    
-    rows = param_helper.getIntParam(params, 'rows', 20) # if rows is not an int, set it to 20  
-    page = param_helper.getIntParam(params, 'page', 1) # if page is not an int, set it to 1
-    
-    export_format = param_helper.getStringParam(params, 'export_format', '')
-    
-    # Make sure correct export value is set
-    if export_format != 'csv' and export_format != 'tsv': 
-        export_format = '';
+    operator = request.GET.get('operator', '')
     
     query_helper = queryHelper()
     
@@ -104,94 +54,71 @@ def rsyslogjson(request):
     query_helper.setOperator(operator) # set the and,or operator before get_list
     
     list_in_txt = query_helper.get_list_in()
-    list_ex_txt = query_helper.get_list_ex()
-      
+    list_ex_txt = query_helper.get_list_ex()   
+    
+    sortname = request.GET.get('sortname', 'id') # Sort Field
+    page = request.GET.get('page', 1) # Page (EX: 2 of 20)
+    sortorder = request.GET.get('sortorder', 'desc') # Ascending/descending
+    rp = int(request.GET.get('rp', 20)) # Requests per page
+    #qtype = request.GET.get('qtype', None) # Query type
+    #query = request.GET.get('query', None) # Query string
+        
+    if sortorder == "desc": # if direction is desc add the minus sign else leave is alone
+        sortname = "-%s" % sortname
+          
     # Get the query set
-    queryset = Systemevents.objects.filter( list_in_txt ).exclude( list_ex_txt ).order_by(orderby).all().select_related("id","devicereportedtime","facility","priority","fromhost","syslogtag","message")
+    queryset = Systemevents.objects.filter( list_in_txt ).exclude( list_ex_txt ).order_by(sortname)     
+    #queryset = Systemevents.objects.order_by(sortname)
     
-    # Export is not set. Do standard Page
-    if len(export_format) == 0:
-    
-        # Set the paginator
-        paginator = Paginator(queryset, rows)
-        
-        try:
-            limited_query = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            limited_query = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            limited_query = paginator.page(paginator.num_pages)
-     
-    # Export is Set. Do not Page but limit query       
-    else:
-       limited_query = queryset[:2000]
-     
     #return HttpResponse(queryset.query)
-
-    # Set the fields for the table header
-    description = {}
-    description['id'] = ('number', 'ID')
-    description['devicereportedtime'] = ('datetime', 'Reported Time')
-    description['facility'] = ('string', 'Facility')
-    description['priority'] = ('string', 'Priority')
-    description['fromhost'] = ('string', 'Host')
-    description['syslogtag'] = ('string', 'Tag')
-    description['message'] = ('string', 'Message')
-    description['messagefull'] = ('string', 'Message Full')
-
-    myvalues = {}
     
-    # Set the google datatable
-    data_table = gviz_api.DataTable(description)
-    
-    # Populate the data in the table
-    for query in limited_query:     
+    p = Paginator(queryset, rp)
         
+    rows = p.page(page)
+        
+    my_list = []
+    count = 1;
+    
+    DATE_FORMAT = "%Y-%m-%d" 
+    TIME_FORMAT = "%H:%M:%S"
+
+    # Populate the data in the table
+    for query in rows:     
+    
         if(len(query.message) > 120):
             mymessage = "%s ...." % query.message[:120] # trim the message if it is greater than 120 chars
         else:
             mymessage = query.message # leave it alone
         
-        myvalues = {'id': query.id,
-                    'devicereportedtime': query.devicereportedtime,
-                    'facility': query.facility,
-                    'priority': query.priority,
+        myvalues = { 'id': count,
+                     'cell':
+                    {'id': query.id,
+                    'devicereportedtime': query.devicereportedtime.strftime("%s %s" % (DATE_FORMAT, TIME_FORMAT)),
+                    'facility': query.facility.facility,
+                    'priority': query.priority.severity,
                     'fromhost': query.fromhost,
                     'syslogtag': query.syslogtag,
                     'message': mymessage,
                     'messagefull': query.message
                     }
+                    }
         
-        data_table.AppendData([myvalues])
+        my_list.append(myvalues)
+        
+        count += 1  
+    
+    json_dict = {
+        'page': page,
+        'total': p.count,
+        'rows': my_list
+        }
+    
+    return HttpResponse(simplejson.dumps(json_dict), mimetype='application/json')
 
-    #import pdb; pdb.set_trace()
     
-    # Export to CSV
-    if export_format == 'csv':
     
-        my_data = data_table.ToCsv(columns_order=("id","devicereportedtime","facility","priority","fromhost","syslogtag","messagefull"))
-        
-        response = HttpResponse(my_data, content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=syslog_export.csv'
+
     
-        return response
-        
-    # Export to TSV
-    if export_format == 'tsv':
-    
-        my_data = data_table.ToTsvExcel(columns_order=("id","devicereportedtime","facility","priority","fromhost","syslogtag","messagefull"))
-        
-        response = HttpResponse(my_data, content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=syslog_export_excel.csv'
-    
-        return response
-        
-    # Default: Export to Table
-    else: 
-        return HttpResponse(data_table.ToResponse(columns_order=("id","devicereportedtime","facility","priority","fromhost","syslogtag","message","messagefull"), 
-                                                  tqx=request.GET.get('tqx', '')))
     
     
     
