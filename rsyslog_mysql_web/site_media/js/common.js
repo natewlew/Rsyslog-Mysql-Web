@@ -12,7 +12,7 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Rsyslog Mysql Web.  If not, see <http://www.gnu.org/licenses/>.
+    along with Rsyslog Mysql Web.  If not, see <http://www.gnu.org/licenses/>. 
 **/
 
 /**
@@ -248,11 +248,6 @@ function formsubmit() {
 }
 
 /**
-    Export Format: cvs,tvs
-**/
-var export_format = "";
-
-/**
     Export to Spreadsheet
     
     @param string mytype - cvs,tvs
@@ -260,8 +255,9 @@ var export_format = "";
 function export_to_spreadsheet(mytype) {
     
     if(mytype) {
-        export_format = mytype;       
-        init();
+        values = $('#fmFilter').serializeArray();
+        values = jQuery.param(values);
+        window.location = sitelink + "ajax?" + values + '&export_format=' + mytype
     }
     
     clear_input_dropdown('export', "");

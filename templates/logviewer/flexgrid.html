@@ -12,10 +12,12 @@
 </head>
 <body>
 <script type="text/javascript">
-                    
+              
+    var sitelink = "{{SITE_URL}}";
+          
     $(function() {
         $("#rsyslog").flexigrid({
-                url: 'ajax',
+                url: sitelink + 'ajax',
                 method: 'GET',
                 dataType: 'json',
                 colModel : [
@@ -183,10 +185,9 @@
       </select></th>
       <th colspan="2">Time: (<i id="refresh_time"></i>) </th>
       <th>Export:</th>
-      <td><select id="export" onChange="export_to_spreadsheet(this.value)">
+      <td><select name="export" id="export" onChange="export_to_spreadsheet(this.value)">
         <option value=""></option>
         <option value="csv">CSV</option>
-        <option value="tsv">TSV (Excel)</option>
       </select></td>
       </tr>
       </table>
