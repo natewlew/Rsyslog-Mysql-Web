@@ -80,7 +80,8 @@ def flexigridajax(request):
     mydate = ""
     
     DATE_FORMAT = "%Y-%m-%d" 
-    TIME_FORMAT = "%H:%M:%S"
+    # 24 Hour(%H:%M:%S), 12 Hour (%I:%M:%S %p)
+    TIME_FORMAT = "%I:%M:%S %p"
 
     # Build Data for Export to CSV
     if export_format == "csv":
