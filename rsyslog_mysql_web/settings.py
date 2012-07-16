@@ -136,7 +136,8 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     "/opt/python/rsyslog_mysql_web/templates",
-    "/opt/Source/Rsyslog-Mysql-Web/templates"
+    "/opt/Source/Rsyslog-Mysql-Web/templates",
+    "/home/MACHLAB/n.lewis/Source/rsyslog_mysql_web/templates"
 )
 
 INSTALLED_APPS = (

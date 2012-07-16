@@ -101,10 +101,10 @@ def flexigridajax(request):
                          'message'])
         
         # Don't Paginate Export but limit to 2000 rows
-        rows = queryset[0:2000]
+        rows = queryset[0:1999]
         
         # Populate the data in the table
-        for query in queryset:     
+        for query in rows:     
             
             mydate = query.devicereportedtime.strftime("%s %s" % (DATE_FORMAT, TIME_FORMAT))
             

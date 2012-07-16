@@ -5,9 +5,11 @@
 <title>Rsyslog Mysql Web</title>
 <!-- <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script> -->
 <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jquery/jquery-ui-1.8.21.custom.min.js"></script>
 <script type="text/javascript" src="{{ MEDIA_URL }}js/flexigrid/flexigrid.pack.js"></script>
 <script type="text/javascript" src="{{ MEDIA_URL }}js/common.js"></script>
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/flexigrid/flexigrid.pack.css" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/jquery/overcast/jquery-ui-1.8.21.custom.css" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/style.css" />
 </head>
 <body>
@@ -27,7 +29,7 @@
                         {display: 'Priority', name : 'priority', width : 100, sortable : true, align: 'left'},
                         {display: 'Fromhost', name : 'fromhost', width : 150, sortable : true, align: 'left'},
                         {display: 'Syslogtag', name : 'syslogtag', width : 150, sortable : true, align: 'left'},
-                        {display: 'Message', name : 'message', width : 650, sortable : true, align: 'left'},
+                        {display: 'Message', name : 'message', width : 640, sortable : true, align: 'left'},
                         {display: 'Messagefull', name : 'messagefull', width : 250, sortable : true, align: 'left',hide: true}
                 ],
                 //buttons : [
@@ -48,8 +50,8 @@
                 rp: 20,
                 showTableToggleBtn: false,
                 resizable: false,
-                width: 1480,
-                height: 460,
+                width: 1470,
+                height: 520,
                 singleSelect: true,
                 onSubmit : function(){
                                         $('#rsyslog').flexOptions({params: [{name:'callId', value:'rsyslog'}].concat($('#fmFilter').serializeArray())});
@@ -70,12 +72,23 @@
                 
                 setDetailText(messagefull, fromhost, devicereportedtime, priority, syslogtag, facility);
                 
+                $( "#tabs" ).tabs('select', 1);
+                
                 //alert(
                 //    '  rowId: '  + $(this).attr('id').substr(3) +
                 //    '  status: ' + $('td[abbr="message"] >div', this).html() 
                 //);
             });
         });
+        
+        //////////////////////////////////////////////////////
+        // Jquery UI Tabs for Query and Event Detail
+        $( "#tabs" ).tabs();
+        
+        //////////////////////////////////////////////////////
+        // Jquery UI Datepickers
+        $( "#devicereportedtime_start" ).datepicker({ dateFormat: "yy-mm-dd"});
+        $( "#devicereportedtime_end" ).datepicker({ dateFormat: "yy-mm-dd"});
 
     }); 
     
@@ -120,6 +133,10 @@
         return true;
     }
     
+    function reload() {
+         $('#rsyslog').flexReload();
+    }
+    
     function onLoad() {
         // Update Refesh Time
         setTimeOnElem('refresh_time');
@@ -130,83 +147,92 @@
 </script>
 
 <h1>Rsylog Mysql Web</h1>
-<div class="detailbox">
-<form action="" id="fmFilter" onSubmit="return false;">
-  <table cellpadding="0" cellspacing="0" class="tableform">
-  <tr>
-  <th colspan="3" rowspan="2" class="tableformheader">Query Builder</th>
-  <th>Start Date:</th>
-  <td><input type="text" name="devicereportedtime_start" size="20" id="devicereportedtime_start"></td>
-  <td><input type="button" name="clear_devicereportedtime_start" value="<" onClick="clear_input('devicereportedtime_start')"></td>
-  <th>End Date:</th>
-  <td><input type="text" name="devicereportedtime_end" size="20" id="devicereportedtime_end"></td>
-  <td><input type="button" name="clear_devicereportedtime_end" value="<" onClick="clear_input('devicereportedtime_end')"></td>
-  <th>Facility:</th>
-  <td><input type="text" name="facility" size="20" id="facility"></td>
-  <td><input type="button" name="clear_facility" value="<" onClick="clear_input('facility')"></td>
-  <th rowspan="2">Message:</th>
-  <td rowspan="2"><textarea name="message" id="message" cols="50" rows="2"></textarea></td>
-  <td rowspan="2"><input type="button" name="clear_message" value="<" onClick="clear_input('message')"></td>
-  </tr>
-  <tr>
-  <th>Host:</th>
-  <td><input type="text" name="fromhost" size="20" id="fromhost"></td>
-  <td><input type="button" name="clear_fromhost" value="<" onClick="clear_input('fromhost')"></td>
-  <th>Priority:</th>
-  <td><input type="text" name="priority" size="20" id="priority"></td>
-  <td><input type="button" name="clear_priority" value="<" onClick="clear_input('priority')"></td>
-  <th>Tag:</th>
-  <td><input type="text" name="syslogtag" size="20" id="syslogtag"></td>
-  <td><input type="button" name="clear_syslogtag" value="<" onClick="clear_input('syslogtag')"></td>
-  </tr>
-  <tr>
-  <td colspan="3">&nbsp;</td>
-  <td colspan="14" align="right">
-      <table>
-      <tr>
-      <th>SQL Operator:</th>
-      <td><select name="operator" id="operator">
-        <option value="or">Or</option>
-        <option value="and">And</option>
-      </select></td>
-      <td><input type="button" name="reset" value="Reset" onClick="reset_page()"></td>
-      <td><input type="button" name="clear" value="Clear Form" onClick="clear_form()"></td>
-      <th>Refresh:</th>
-      <td><select id="refresh" onChange="setTimer(this.value)">
-        <option value="">Off</option>
-        <option value="10000">10 sec</option>
-        <option value="20000">20 sec</option>
-        <option value="30000">30 sec</option>
-        <option value="45000">45 sec</option>
-        <option value="60000">1 min</option>
-        <option value="90000">1 1/2 min</option>
-        <option value="120000">2 min</option>
-        <option value="300000">5 min</option>
-      </select></th>
-      <th colspan="2">Time: (<i id="refresh_time"></i>) </th>
-      <th>Export:</th>
-      <td><select name="export" id="export" onChange="export_to_spreadsheet(this.value)">
-        <option value=""></option>
-        <option value="csv">CSV</option>
-      </select></td>
-      </tr>
-      </table>
-  </td>
-  </tr>
-  </table>
-</form>
-</div>
 <div id="rsyslog" ></div>
-<h3>Event Detail</h3>
-<div class="detailbox">
-<p>
-<i id="date_detail"></i><br />
-<i id="facility_detail"></i><br />
-<i id="host_detail"></i><br />
-<i id="priority_detail"></i><br />
-</p>
-<p id="tag_detail"></p>
-<div class="messagedetail" id="message_detail"></div>
+<div id="tabs" style="width: 1460px;">
+	<ul>
+	    <li><a href="#tabs-1">Query Builder</a></li>
+		<li><a href="#tabs-2">Event Detail</a></li>
+	</ul>
+	<div id="tabs-1">
+		<div class="detailbox">
+        <form action="" id="fmFilter" onSubmit="return formsubmit();">
+          <table cellpadding="0" cellspacing="0" class="tableform">
+          <tr>
+          <th colspan="3" rowspan="2" class="tableformheader">Query Builder</th>
+          <th>Start Date:</th>
+          <td><input type="text" name="devicereportedtime_start" size="20" id="devicereportedtime_start"></td>
+          <td><input type="button" name="clear_devicereportedtime_start" value="<" onClick="clear_input('devicereportedtime_start')"></td>
+          <th>End Date:</th>
+          <td><input type="text" name="devicereportedtime_end" size="20" id="devicereportedtime_end"></td>
+          <td><input type="button" name="clear_devicereportedtime_end" value="<" onClick="clear_input('devicereportedtime_end')"></td>
+          <th>Facility:</th>
+          <td><input type="text" name="facility" size="20" id="facility"></td>
+          <td><input type="button" name="clear_facility" value="<" onClick="clear_input('facility')"></td>
+          <th rowspan="2">Message:</th>
+          <td rowspan="2"><textarea name="message" id="message" cols="50" rows="2"></textarea></td>
+          <td rowspan="2"><input type="button" name="clear_message" value="<" onClick="clear_input('message')"></td>
+          </tr>
+          <tr>
+          <th>Host:</th>
+          <td><input type="text" name="fromhost" size="20" id="fromhost"></td>
+          <td><input type="button" name="clear_fromhost" value="<" onClick="clear_input('fromhost')"></td>
+          <th>Priority:</th>
+          <td><input type="text" name="priority" size="20" id="priority"></td>
+          <td><input type="button" name="clear_priority" value="<" onClick="clear_input('priority')"></td>
+          <th>Tag:</th>
+          <td><input type="text" name="syslogtag" size="20" id="syslogtag"></td>
+          <td><input type="button" name="clear_syslogtag" value="<" onClick="clear_input('syslogtag')"></td>
+          </tr>
+          <tr>
+          <td colspan="3">&nbsp;</td>
+          <td colspan="14" align="right">
+              <table>
+              <tr>
+              <th>SQL Operator:</th>
+              <td><select name="operator" id="operator">
+                <option value="or">Or</option>
+                <option value="and">And</option>
+              </select></td>
+              <td><input type="submit" name="submit" value="Submit"></td>
+              <td><input type="button" name="clear" value="Clear Form" onClick="clear_form()"></td>
+              <th>Refresh:</th>
+              <td><select id="refresh" onChange="setTimer(this.value)">
+                <option value="">Off</option>
+                <option value="10000">10 sec</option>
+                <option value="20000">20 sec</option>
+                <option value="30000">30 sec</option>
+                <option value="45000">45 sec</option>
+                <option value="60000">1 min</option>
+                <option value="90000">1 1/2 min</option>
+                <option value="120000">2 min</option>
+                <option value="300000">5 min</option>
+              </select></th>
+              <th colspan="2">Time: (<i id="refresh_time"></i>) </th>
+              <th>Export:</th>
+              <td><select name="export" id="export" onChange="export_to_spreadsheet(this.value)">
+                <option value=""></option>
+                <option value="csv">CSV</option>
+              </select></td>
+              </tr>
+              </table>
+          </td>
+          </tr>
+          </table>
+        </form>
+        </div>
+	</div>
+	<div id="tabs-2">
+		<div class="detailbox">
+        <p>
+        <i id="date_detail">&nbsp;</i><br />
+        <i id="facility_detail">&nbsp;</i><br />
+        <i id="host_detail">&nbsp;</i><br />
+        <i id="priority_detail">&nbsp;</i><br />
+        </p>
+        <p id="tag_detail">&nbsp;</p>
+        <div class="messagedetail" id="message_detail">Select a Row to See the Detail.</div>
+        </div>
+	</div>
 </div>
 </body>
 </html>

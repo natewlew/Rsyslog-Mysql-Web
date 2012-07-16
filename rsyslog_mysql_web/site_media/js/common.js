@@ -154,7 +154,10 @@ function initTimer() {
 **/
 function myTimer() {
     
-    //init(); //refresh page
+    reload(); //refresh page
+    
+    // Update Refesh Time
+    setTimeOnElem('refresh_time');
 }
 
 /**
@@ -231,23 +234,6 @@ function append_query(query, elem) {
 }
 
 /**
-    Not Implemented
-**/
-
-
-/**
-    Submit Form
-    
-    Can't find way to submit form
-**/
-function formsubmit() {
-    
-    init();
-    
-    return false;
-}
-
-/**
     Export to Spreadsheet
     
     @param string mytype - cvs,tvs
@@ -261,4 +247,21 @@ function export_to_spreadsheet(mytype) {
     }
     
     clear_input_dropdown('export', "");
+}
+
+/**
+    Not Implemented
+**/
+
+
+/**
+    Submit Form
+    
+    Can't find way to submit form
+**/
+function formsubmit() {
+    
+    reload();
+    
+    return false;
 }

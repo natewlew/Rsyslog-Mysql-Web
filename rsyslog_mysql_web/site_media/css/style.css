@@ -24,10 +24,12 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
     border-width: 1px; 
     border-color: #eeeeee; 
     padding: 5px; 
-    background-color: #f9fafd;
+    background-color: #f7f7f7;
     font-family: "Times New Roman", Times, serif;
     font-size: 14px;
-    width: 1465px;
+    width: inherit;
+    /* height: 210px; */
+    /* width: 1465px; */
 }
 
 .messagedetail {
@@ -38,7 +40,8 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
     background-color: white;
     font-family: "Times New Roman", Times, serif;
     font-size: 14px;
-    width: 1465px;
+    width: inherit;
+    /* width: 1465px; */
 }
 
 .tableform th {
