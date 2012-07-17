@@ -45,7 +45,7 @@ DATABASES = {
 if DEBUG: # debug site url
     SITE_URL = "http://localhost:8000/"
 else: # production site url
-    SITE_URL = "http://zabbix/rsyslog-mysql-web/"
+    SITE_URL = "https://zabbix/rsyslog-mysql-web/"
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
