@@ -17,6 +17,9 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 
 # Django settings for rsyslog_mysql_web project.
 
+import os
+PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -39,9 +42,9 @@ DATABASES = {
 
 #############
 ## Rsyslog-Mysql-Web Custom settings
-if DEBUG:
+if DEBUG: # debug site url
     SITE_URL = "http://localhost:8000/"
-else:
+else: # production site url
     SITE_URL = "http://zabbix/rsyslog-mysql-web/"
 
 # Local time zone for this installation. Choices can be found here:
@@ -135,9 +138,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    "/opt/python/rsyslog_mysql_web/templates",
-    "/opt/Source/Rsyslog-Mysql-Web/templates",
-    "/home/MACHLAB/n.lewis/Source/rsyslog_mysql_web/templates"
+    os.path.join(PROJECT_PATH, '../templates')
 )
 
 INSTALLED_APPS = (
