@@ -18,7 +18,11 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 /**
     Default Style
 **/
-    
+h1 {
+    font-family: "Times New Roman", Times, serif;
+    font-style: italic;
+}
+
 .detailbox {
     border-style:solid; 
     border-width: 1px; 
@@ -51,6 +55,12 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 .tableformheader {
     text-align: left;
     font-size: 18px;
+}
+
+.footer {
+    text-align: center;
+    font-size: 12px;
+    margin-right: 250px;
 }
 
 /**
