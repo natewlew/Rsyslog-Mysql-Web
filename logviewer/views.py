@@ -23,6 +23,7 @@ from logviewer.utils import queryHelper
 from django.http import HttpResponse
 import simplejson
 import csv
+from datetime import datetime
 
 template="logviewer"
                                                  
@@ -32,6 +33,8 @@ def index(request):
         
 def flexigridajax(request):
 
+    #import pdb; pdb.set_trace()
+    
     # Get Form Values
     devicereportedtime_start = request.GET.get('devicereportedtime_start', '')  
     devicereportedtime_end = request.GET.get('devicereportedtime_end', '')       
@@ -68,6 +71,9 @@ def flexigridajax(request):
     rp = int(request.GET.get('rp', 20)) # Requests per page
     #qtype = request.GET.get('qtype', None) # Query type
     #query = request.GET.get('query', None) # Query string
+    
+    if sortname == 'age': # Age is a calculated column. The database doesn't know about it.
+        sortname = 'id';
         
     if sortorder == "desc": # if direction is desc add the minus sign else leave is alone
         sortname = "-%s" % sortname
@@ -142,11 +148,16 @@ def flexigridajax(request):
             
             mydate = query.devicereportedtime.strftime("%s %s" % (DATE_FORMAT, TIME_FORMAT))
             
+            mynow = datetime.now()
+            
+            tdelta = mynow - query.devicereportedtime # Get age 
+            
             # Create Dictionary for Row
             myvalues = { 'id': count,
                          'cell':
                             {'id': query.id,
                             'devicereportedtime': mydate,
+                            'age': "%s, %s, %s" % (tdelta.days, tdelta.seconds//3600, (tdelta.seconds//60)%60), # Get age in Days,Hours,Minutes
                             'facility': query.facility.facility,
                             'priority': query.priority.severity,
                             'fromhost': query.fromhost,
