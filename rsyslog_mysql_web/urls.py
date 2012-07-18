@@ -3,7 +3,7 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 
     Rsyslog Mysql Web is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Rsyslog Mysql Web is distributed in the hope that it will be useful,
@@ -27,10 +27,6 @@ urlpatterns = patterns('',
 
     url(r'^$', 'logviewer.views.index', name = 'rsyslog'),
     url(r'^ajax$', 'logviewer.views.flexigridajax', name = 'flexigridajax'),
-    #url(r'^logs/ajax/$', 'logviewer.views.logsajax', name = 'logs_ajax'),
-    #url(r'^logs/dojo/$', 'logviewer.views.logsdojo', name = 'logs_dojo'), # Examples:
-    # url(r'^$', 'rsyslog_mysql_web.views.home', name='home'),
-    # url(r'^rsyslog_mysql_web/', include('rsyslog_mysql_web.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
