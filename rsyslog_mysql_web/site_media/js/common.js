@@ -250,6 +250,23 @@ function export_to_spreadsheet(mytype) {
 }
 
 /**
+    Export to Spreadsheet
+    
+    @param string mytype - cvs,tvs
+**/
+function getChartUrl(chartcolumn) {
+    
+    if(chartcolumn) {
+        values = $('#fmFilter').serializeArray();
+        values = jQuery.param(values);
+        
+        return sitelink + "ajax?" + values + '&export_format=chart&chartcolumn=' + chartcolumn
+               
+    }
+    
+}
+
+/**
     Not Implemented
 **/
 

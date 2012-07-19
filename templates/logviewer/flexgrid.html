@@ -21,13 +21,20 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Rsyslog Mysql Web</title>
-<!-- <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script> -->
+<!-- Jquery -->
 <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery/jquery-ui-1.8.21.custom.min.js"></script>
-<script type="text/javascript" src="{{ MEDIA_URL }}js/flexigrid/flexigrid.pack.js"></script>
-<script type="text/javascript" src="{{ MEDIA_URL }}js/common.js"></script>
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/flexigrid/flexigrid.pack.css" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/jquery/overcast/jquery-ui-1.8.21.custom.css" />
+<!-- Flexgrid -->
+<script type="text/javascript" src="{{ MEDIA_URL }}js/flexigrid/flexigrid.pack.js"></script>
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/flexigrid/flexigrid.pack.css" />
+<!-- JqPlot -->
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jqplot/jquery.jqplot.min.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jqplot/jqplot.canvasTextRenderer.min.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jqplot/jqplot.canvasAxisLabelRenderer.min.js"></script>
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/jqplot/jquery.jqplot.min.css" />
+<!-- Rsyslog Mysql Web -->
+<script type="text/javascript" src="{{ MEDIA_URL }}js/common.js"></script>
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/style.css" />
 </head>
 <body>
@@ -162,15 +169,94 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
     }
     
     $(document).ready(onLoad)
+    
+    //////////////////////////////////////
+    // Charts
+    var drawChart = function(value){
+      
+      if(value == "") {
+      
+       $("#rsyslog").removeAttr("class");
+       $("#rsyslog").removeAttr("style");
+       
+       reload();
+       
+        return;
+      }
+      
+      $('#rsyslog').html("");
+        
+        var ajaxDataRenderer = function(url, plot, options) {
+            var ret = null;
+            $.ajax({
+                // have to use synchronous here, else the function 
+                // will return before the data is fetched
+                async: false,
+                url: url,
+                dataType:"json",
+                success: function(data) {
+                    ret = data;
+                }
+            });
+            return ret;
+        };
+
+        // The url for our json data
+        var jsonurl = getChartUrl(value);
+
+        // passing in the url string as the jqPlot data argument is a handy
+        // shortcut for our renderer.  You could also have used the
+        // "dataRendererOptions" option to pass in the url.
+        var plot2 = $.jqplot('rsyslog', jsonurl,{
+            title: "AJAX JSON Data Renderer",
+            dataRenderer: ajaxDataRenderer,
+            dataRendererOptions: {
+                unusedOptionalUrl: jsonurl
+            },
+            axesDefaults: {
+            labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+          },
+          // Likewise, seriesDefaults specifies default options for all
+          // series in a plot.  Options specified in seriesDefaults or
+          // axesDefaults can be overridden by individual series or
+          // axes options.
+          // Here we turn on smoothing for the line.
+          seriesDefaults: {
+              rendererOptions: {
+                  smooth: true
+              }
+          },
+          // An axes object holds options for all axes.
+          // Allowable axes are xaxis, x2axis, yaxis, y2axis, y3axis, ...
+          // Up to 9 y axes are supported.
+          axes: {
+            // options for each axis are specified in seperate option objects.
+            xaxis: {
+              label: "X Axis",
+              // Turn off "padding".  This will allow data point to lie on the
+              // edges of the grid.  Default padding is 1.2 and will keep all
+              // points inside the bounds of the grid.
+              pad: 0
+            },
+            yaxis: {
+              label: "Y Axis"
+            }
+          }
+        });
+  
+      }
+
 
 </script>
 
 <h1>Rsylog Mysql Web</h1>
+<div id="mychart"><div>
 <div id="rsyslog" ></div>
 <div id="tabs" style="width: 1460px;">
 	<ul>
 	    <li><a href="#tabs-1">Query Builder</a></li>
 		<li><a href="#tabs-2">Event Detail</a></li>
+		<li><a href="#tabs-3">Charts</a></li>
 	</ul>
 	<div id="tabs-1">
 		<div class="detailbox">
@@ -250,6 +336,20 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
         </p>
         <p id="tag_detail">&nbsp;</p>
         <div class="messagedetail" id="message_detail">Select a Row to See the Detail.</div>
+        </div>
+	</div>
+	<div id="tabs-3">
+	    <div class="detailbox">
+            <form action="" id="fmFilterChart" onsubmit="return formsubmitchart();">
+            <select name="charttype" id="charttype">
+                <option value="bar">Bar</option>
+                <option value="line">Line</option>
+              </select>
+              <select name="chartcolumn" id="chartcolumn" onchange="drawChart(this.value)">
+                <option value=""></option>
+                <option value="priority">Priority</option>
+              </select>
+            </form>
         </div>
 	</div>
 </div>

@@ -24,6 +24,7 @@ from django.http import HttpResponse
 import simplejson
 import csv
 from datetime import datetime
+from django.db.models import Count
 
 template="logviewer"
                                                  
@@ -126,6 +127,25 @@ def flexigridajax(request):
 
         return response
 
+    # Build Data for Chart
+    elif export_format == "chart":
+    
+        my_list = []
+        
+        chartcolumn = request.GET.get('chartcolumn', 'priority')
+        
+        rows = queryset.annotate(my_count=Count('priority__severity')).values('priority__severity', 'my_count').order_by()
+        
+        #import pdb; pdb.set_trace()
+        
+        # Populate the data in the table
+        for query in rows:
+        
+            my_list.append([query['priority__severity'], query['my_count']])
+        
+        # Return Json
+        return HttpResponse(simplejson.dumps(my_list), mimetype='application/json')
+        
     # Default: Build data for Flexigrid
     else:
     
