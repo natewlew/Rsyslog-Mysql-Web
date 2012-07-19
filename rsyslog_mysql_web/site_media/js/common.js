@@ -267,11 +267,6 @@ function getChartUrl(chartcolumn) {
 }
 
 /**
-    Not Implemented
-**/
-
-
-/**
     Submit Form
     
     Can't find way to submit form

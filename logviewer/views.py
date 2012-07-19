@@ -21,7 +21,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
 from logviewer.utils import queryHelper
 from django.http import HttpResponse
-import simplejson
+#import simplejson
+from django.utils import simplejson
 import csv
 from datetime import datetime
 from django.db.models import Count
@@ -132,19 +133,19 @@ def flexigridajax(request):
     
         my_list = []
         
-        chartcolumn = request.GET.get('chartcolumn', 'priority')
+        chartcolumn = request.GET.get('chartcolumn', 'priority__severity')
         
-        rows = queryset.annotate(my_count=Count('priority__severity')).values('priority__severity', 'my_count').order_by()
+        rows = queryset.values(chartcolumn).annotate(my_count=Count(chartcolumn)).values(chartcolumn, 'my_count')
         
-        #import pdb; pdb.set_trace()
+        #return HttpResponse(rows.query)
         
         # Populate the data in the table
         for query in rows:
         
-            my_list.append([query['priority__severity'], query['my_count']])
-        
+            my_list.append([query[chartcolumn], query['my_count']])
+            
         # Return Json
-        return HttpResponse(simplejson.dumps(my_list), mimetype='application/json')
+        return HttpResponse(simplejson.dumps([my_list]), mimetype='application/json')
         
     # Default: Build data for Flexigrid
     else:

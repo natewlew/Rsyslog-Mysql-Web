@@ -32,6 +32,11 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 <script type="text/javascript" src="{{ MEDIA_URL }}js/jqplot/jquery.jqplot.min.js"></script>
 <script type="text/javascript" src="{{ MEDIA_URL }}js/jqplot/jqplot.canvasTextRenderer.min.js"></script>
 <script type="text/javascript" src="{{ MEDIA_URL }}js/jqplot/jqplot.canvasAxisLabelRenderer.min.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jqplot/jqplot.categoryAxisRenderer.min.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jqplot/jqplot.canvasAxisTickRenderer.min.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jqplot/jqplot.barRenderer.min.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jqplot/jqplot.pieRenderer.min.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jqplot/jqplot.json2.min.js"></script>
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/jqplot/jquery.jqplot.min.css" />
 <!-- Rsyslog Mysql Web -->
 <script type="text/javascript" src="{{ MEDIA_URL }}js/common.js"></script>
@@ -41,8 +46,26 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 <script type="text/javascript">
               
     var sitelink = "{{SITE_URL}}";
+    
+    var width = 1470;
+    var height = 520;
+    
+    var chartwidthcon = 1000;
+    var chartheightcon = 520
+    
+    var chartwidth = 900;
+    var chartheight = 420;
+    
+    var chartTypeForm = '<form><select name="charttype" id="charttype" onchange="drawChart()"><option value="">Select</option><option value="line">Line</option><option value="bar">Bar</option><option value="pie">Pie</option></select></form>'
           
     $(function() {
+        $( "#dialog-modal" ).dialog({
+			height: chartheightcon,
+			width: chartwidthcon,
+			modal: true,
+			autoOpen: false
+		});
+		
         $("#rsyslog").flexigrid({
                 url: sitelink + 'ajax',
                 method: 'GET',
@@ -76,8 +99,8 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
                 rp: 20,
                 showTableToggleBtn: false,
                 resizable: false,
-                width: 1470,
-                height: 520,
+                width: width,
+                height: height,
                 singleSelect: true,
                 onSubmit : function(){
                                         $('#rsyslog').flexOptions({params: [{name:'callId', value:'rsyslog'}].concat($('#fmFilter').serializeArray())});
@@ -172,19 +195,26 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
     
     //////////////////////////////////////
     // Charts
-    var drawChart = function(value){
+    var drawChart = function(){
       
-      if(value == "") {
+      var mycharttype = $("#charttype").val();
+      var mychartcolumn = $("#chartcolumn").val();
       
-       $("#rsyslog").removeAttr("class");
-       $("#rsyslog").removeAttr("style");
+      if(mychartcolumn == "") {
+      
+       //$('#outer').html('<div id="rsyslog"></div>');
        
-       reload();
+       //$("#rsyslog").removeAttr("class");
+       //$("#rsyslog").removeAttr("style");
+       
+       //reload();
        
         return;
       }
       
-      $('#rsyslog').html("");
+      $("#dialog-modal").dialog('open')
+      
+      $('#dialog-modal').html(chartTypeForm + '<div id="rsyslog_chart" style="width: ' + chartwidth + 'px ; height: ' + chartheight + 'px ;"></div>');
         
         var ajaxDataRenderer = function(url, plot, options) {
             var ret = null;
@@ -202,46 +232,69 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
         };
 
         // The url for our json data
-        var jsonurl = getChartUrl(value);
+        var jsonurl = getChartUrl(mychartcolumn);
+        
+        // Chart Type Renderer (Pie,Line,Bar)
+        var myRender = function() {
+            
+            if(mycharttype == 'bar') {
+                return {renderer:$.jqplot.BarRenderer};
+            } else if(mycharttype == 'pie') {
+                return {renderer:$.jqplot.PieRenderer};
+            } else {
+                return {renderer:$.jqplot.LineRenderer};;
+            }
+        }
+        
+        // Set chart axis settings
+        var myAxis = function() {
+        
+            if(mycharttype == 'pie') {
+                return;
+            } else {
+            
+                return {
+                    xaxis: {
+                      labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+                      renderer: $.jqplot.CategoryAxisRenderer,
+                      //label: mychartcolumn,
+                      tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                      tickOptions: {
+                          angle: -30,
+                          fontFamily: 'Courier New',
+                          fontSize: '9pt'
+                      }             
+                    },
+                    yaxis: {
+                      label: 'Count',
+                      labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+                    }    
+                }
+            
+            }
+        }
+        
+        var myLegend = function() {
+        
+            if(mycharttype == 'pie') {
+                return { show:true, location: 'e' }
+            } else {
+                return { show:false }
+            }
+        }
 
         // passing in the url string as the jqPlot data argument is a handy
         // shortcut for our renderer.  You could also have used the
         // "dataRendererOptions" option to pass in the url.
-        var plot2 = $.jqplot('rsyslog', jsonurl,{
-            title: "AJAX JSON Data Renderer",
+        var plot2 = $.jqplot('rsyslog_chart', jsonurl,{
+            title: "JqPlot Chart",
             dataRenderer: ajaxDataRenderer,
             dataRendererOptions: {
                 unusedOptionalUrl: jsonurl
             },
-            axesDefaults: {
-            labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-          },
-          // Likewise, seriesDefaults specifies default options for all
-          // series in a plot.  Options specified in seriesDefaults or
-          // axesDefaults can be overridden by individual series or
-          // axes options.
-          // Here we turn on smoothing for the line.
-          seriesDefaults: {
-              rendererOptions: {
-                  smooth: true
-              }
-          },
-          // An axes object holds options for all axes.
-          // Allowable axes are xaxis, x2axis, yaxis, y2axis, y3axis, ...
-          // Up to 9 y axes are supported.
-          axes: {
-            // options for each axis are specified in seperate option objects.
-            xaxis: {
-              label: "X Axis",
-              // Turn off "padding".  This will allow data point to lie on the
-              // edges of the grid.  Default padding is 1.2 and will keep all
-              // points inside the bounds of the grid.
-              pad: 0
-            },
-            yaxis: {
-              label: "Y Axis"
-            }
-          }
+            series:[myRender()],
+            axes: myAxis(),
+            legend: myLegend()
         });
   
       }
@@ -250,8 +303,11 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 </script>
 
 <h1>Rsylog Mysql Web</h1>
-<div id="mychart"><div>
-<div id="rsyslog" ></div>
+<div id="dialog-modal" title="JqPLot Chart">
+</div>
+<div id="outer">
+    <div id="rsyslog" ></div>
+</div>
 <div id="tabs" style="width: 1460px;">
 	<ul>
 	    <li><a href="#tabs-1">Query Builder</a></li>
@@ -340,14 +396,13 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 	</div>
 	<div id="tabs-3">
 	    <div class="detailbox">
-            <form action="" id="fmFilterChart" onsubmit="return formsubmitchart();">
-            <select name="charttype" id="charttype">
-                <option value="bar">Bar</option>
-                <option value="line">Line</option>
-              </select>
-              <select name="chartcolumn" id="chartcolumn" onchange="drawChart(this.value)">
+            <form action="" id="fmFilterChart">       
+              <select name="chartcolumn" id="chartcolumn" onchange="drawChart()">
                 <option value=""></option>
-                <option value="priority">Priority</option>
+                <option value="priority__severity">Priority</option>
+                <option value="facility__facility">Facility</option>
+                <option value="fromhost">Host</option>
+                <option value="syslogtag">Tag</option>
               </select>
             </form>
         </div>
