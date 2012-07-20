@@ -50,22 +50,23 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
     var width = 1470;
     var height = 520;
     
-    var chartwidthcon = 1000;
-    var chartheightcon = 520
-    
     var chartwidth = 900;
     var chartheight = 420;
-    
-    var chartTypeForm = '<form><select name="charttype" id="charttype" onchange="drawChart()"><option value="">Select</option><option value="line">Line</option><option value="bar">Bar</option><option value="pie">Pie</option></select></form>'
           
     $(function() {
+    
+        // Set Time
+        setTimeOnElem('refresh_time');
+        
+        // Create Chart Dialog
         $( "#dialog-modal" ).dialog({
-			height: chartheightcon,
-			width: chartwidthcon,
+			height: 520,
+			width: 1000,
 			modal: true,
 			autoOpen: false
 		});
 		
+		// Create Flexigrid
         $("#rsyslog").flexigrid({
                 url: sitelink + 'ajax',
                 method: 'GET',
@@ -81,20 +82,9 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
                         {display: 'Message', name : 'message', width : 640, sortable : true, align: 'left'},
                         {display: 'Messagefull', name : 'messagefull', width : 250, sortable : true, align: 'left',hide: true}
                 ],
-                //buttons : [
-               //           {name: 'Search', bclass: 'search', onpress : this.doSearch()},
-               //         {name: 'Edit', bclass: 'edit', onpress : doCommand},
-               //         {name: 'Delete', bclass: 'delete', onpress : doCommand},
-               //         {separator: true}
-                //],
-               // searchitems : [
-               //         {display: 'Date', name : 'devicereportedtime'},
-               //         {display: 'Fromhost', name : 'fromhost', isdefault: true}
-               // ],
                 sortname: "id",
                 sortorder: "desc",
                 usepager: true,
-                //title: "Syslog",
                 useRp: true,
                 rp: 20,
                 showTableToggleBtn: false,
@@ -102,45 +92,41 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
                 width: width,
                 height: height,
                 singleSelect: true,
-                onSubmit : function(){
+                onSubmit : function(){ // Add extra form parameters to query
                                         $('#rsyslog').flexOptions({params: [{name:'callId', value:'rsyslog'}].concat($('#fmFilter').serializeArray())});
                                         return true;
                                     },
                 onSuccess: gridFormat 
         });
         
+        // Set the Text for the Event Detail
         $('#rsyslog').click(function(event){
-        $('.trSelected', this).each( function(){
-        
-                var devicereportedtime = $('td[abbr="devicereportedtime"] >div', this).html()
-                var facility = $('td[abbr="facility"] >div', this).html()
-                var priority = $('td[abbr="priority"] >div', this).html()
-                var fromhost = $('td[abbr="fromhost"] >div', this).html()
-                var syslogtag = $('td[abbr="syslogtag"] >div', this).html()
-                var messagefull = $('td[abbr="messagefull"] >div', this).html()
-                
-                setDetailText(messagefull, fromhost, devicereportedtime, priority, syslogtag, facility);
-                
-                $( "#tabs" ).tabs('select', 1);
-                
-                //alert(
-                //    '  rowId: '  + $(this).attr('id').substr(3) +
-                //    '  status: ' + $('td[abbr="message"] >div', this).html() 
-                //);
-            });
+            $('.trSelected', this).each( function(){
+            
+                    var devicereportedtime = $('td[abbr="devicereportedtime"] >div', this).html()
+                    var facility = $('td[abbr="facility"] >div', this).html()
+                    var priority = $('td[abbr="priority"] >div', this).html()
+                    var fromhost = $('td[abbr="fromhost"] >div', this).html()
+                    var syslogtag = $('td[abbr="syslogtag"] >div', this).html()
+                    var messagefull = $('td[abbr="messagefull"] >div', this).html()
+                    
+                    setDetailText(messagefull, fromhost, devicereportedtime, priority, syslogtag, facility);
+                    
+                    // Select the Event Detail Tab
+                    $( "#tabs" ).tabs('select', 1);
+                });
         });
         
-        //////////////////////////////////////////////////////
         // Jquery UI Tabs for Query and Event Detail
         $( "#tabs" ).tabs();
         
-        //////////////////////////////////////////////////////
         // Jquery UI Datepickers
         $( "#devicereportedtime_start" ).datepicker({ dateFormat: "yy-mm-dd"});
         $( "#devicereportedtime_end" ).datepicker({ dateFormat: "yy-mm-dd"});
 
     }); 
     
+    // Format the Priority Column
     function gridFormat() {
         var lblPriority = { 
                 'Emergency' : { 
@@ -182,16 +168,21 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
         return true;
     }
     
+    // Reload Flexigrid
     function reload() {
          $('#rsyslog').flexReload();
     }
     
-    function onLoad() {
-        // Update Refesh Time
-        setTimeOnElem('refresh_time');
+    // Open Chart Dialog
+    var openMyDialog = function() {
+        $("#dialog-modal").dialog('open')
+        document.getElementById('chartcolumn').value = ""; 
+        document.getElementById('charttype').value = "line";
+        document.getElementById('chartwidth').value = chartwidth; 
+        document.getElementById('chartheight').value = chartheight;
+        
+        $('#rsyslog_chart_placeholder').html('');
     }
-    
-    $(document).ready(onLoad)
     
     //////////////////////////////////////
     // Charts
@@ -200,21 +191,13 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
       var mycharttype = $("#charttype").val();
       var mychartcolumn = $("#chartcolumn").val();
       
-      if(mychartcolumn == "") {
-      
-       //$('#outer').html('<div id="rsyslog"></div>');
-       
-       //$("#rsyslog").removeAttr("class");
-       //$("#rsyslog").removeAttr("style");
-       
-       //reload();
-       
+      // If chart column is empty, exit function
+      if(mychartcolumn == "") {     
         return;
       }
       
-      $("#dialog-modal").dialog('open')
-      
-      $('#dialog-modal').html(chartTypeForm + '<div id="rsyslog_chart" style="width: ' + chartwidth + 'px ; height: ' + chartheight + 'px ;"></div>');
+      // Fill the placeholder with the chart div.
+      $('#rsyslog_chart_placeholder').html('<div id="rsyslog_chart" style="width: ' + chartwidth + 'px ; height: ' + chartheight + 'px ;"></div>');
         
         var ajaxDataRenderer = function(url, plot, options) {
             var ret = null;
@@ -234,19 +217,59 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
         // The url for our json data
         var jsonurl = getChartUrl(mychartcolumn);
         
+        // Get the Animate Value
+        var myAnimate = function() {
+        
+            var myAnimateVal = $("#animate:checkbox:checked").val();
+            //$('input:checkbox:checked').val();
+            
+            if(myAnimateVal == "1") {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
         // Chart Type Renderer (Pie,Line,Bar)
         var myRender = function() {
             
             if(mycharttype == 'bar') {
-                return {renderer:$.jqplot.BarRenderer};
+                return {
+                        renderer:$.jqplot.BarRenderer, 
+                        rendererOptions: 
+                            {
+                             smooth: true,
+                              animation: 
+                                { 
+                                   show: myAnimate() 
+                                }
+                              }
+                        };
+                        
             } else if(mycharttype == 'pie') {
-                return {renderer:$.jqplot.PieRenderer};
+                return {
+                        renderer:$.jqplot.PieRenderer, 
+                           rendererOptions: 
+                                    {
+                                      showDataLabels: true
+                                    }
+                        };
             } else {
-                return {renderer:$.jqplot.LineRenderer};;
+                return {
+                        renderer:$.jqplot.LineRenderer, 
+                        rendererOptions: 
+                            {
+                                smooth: true, 
+                                animation: 
+                                    { 
+                                        show: myAnimate() 
+                                    }
+                             }
+                        };
             }
         }
         
-        // Set chart axis settings
+        // Set chart axis settings. Disable if Pie
         var myAxis = function() {
         
             if(mycharttype == 'pie') {
@@ -268,12 +291,14 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
                     yaxis: {
                       label: 'Count',
                       labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+                      //forceTickAt100: true 
                     }    
                 }
             
             }
         }
         
+        // Get the Legend. Show if pie
         var myLegend = function() {
         
             if(mycharttype == 'pie') {
@@ -283,20 +308,30 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
             }
         }
 
-        // passing in the url string as the jqPlot data argument is a handy
-        // shortcut for our renderer.  You could also have used the
-        // "dataRendererOptions" option to pass in the url.
+        // Load the Chart Using the Json Url
         var plot2 = $.jqplot('rsyslog_chart', jsonurl,{
-            title: "JqPlot Chart",
+            //title: "JqPlot Chart",
             dataRenderer: ajaxDataRenderer,
             dataRendererOptions: {
                 unusedOptionalUrl: jsonurl
             },
             series:[myRender()],
             axes: myAxis(),
-            legend: myLegend()
+            legend: myLegend(),
         });
   
+      }
+      
+      // Change Chart Width
+      var changeChartWidth = function(width) {
+        chartwidth = width;
+        drawChart();
+      }
+      
+      // Change Chart height
+      var changeChartHeight = function(height) {
+        chartheight = height;
+        drawChart();
       }
 
 
@@ -304,6 +339,39 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 
 <h1>Rsylog Mysql Web</h1>
 <div id="dialog-modal" title="JqPLot Chart">
+    <div>
+        <form name="chart_form">
+            <select name="charttype" id="charttype" onchange="drawChart()">
+                <!-- <option value="">Select Chart Type</option> -->
+                <option value="line">Line</option>
+                <option value="bar">Bar</option>
+                <option value="pie">Pie</option>
+            </select>
+            <select name="chartcolumn" id="chartcolumn" onchange="drawChart()">
+                <option value="">Select Column</option>
+                <option value="priority__severity">Priority</option>
+                <option value="facility__facility">Facility</option>
+                <option value="fromhost">Host</option>
+                <option value="syslogtag">Tag</option>
+                <option value="devicereportedtime">Date</option>
+              </select>
+              Width: <select name="chartwidth" id="chartwidth" onchange="changeChartWidth(this.value)">
+                <option value="400">400</option>
+                <option value="700">700</option>
+                <option value="900" selected="selected">900</option>
+                <option value="1200">1200</option>
+                <option value="1500">1500</option>
+              </select>
+              Height: <select name="chartheight" id="chartheight" onchange="changeChartHeight(this.value)">
+                <option value="300">300</option>
+                <option value="420" selected="selected">420</option>
+                <option value="700">700</option>
+                <option value="1000">1000</option>
+              </select>
+              Animate: <input type="checkbox" name="animate" id="animate" checked="checked" value="1" />
+        </form>
+    </div>
+    <div id="rsyslog_chart_placeholder"></div>
 </div>
 <div id="outer">
     <div id="rsyslog" ></div>
@@ -312,7 +380,6 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 	<ul>
 	    <li><a href="#tabs-1">Query Builder</a></li>
 		<li><a href="#tabs-2">Event Detail</a></li>
-		<li><a href="#tabs-3">Charts</a></li>
 	</ul>
 	<div id="tabs-1">
 		<div class="detailbox">
@@ -345,8 +412,8 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
           <td><input type="button" name="clear_syslogtag" value="&lt;" onclick="clear_input('syslogtag')" /></td>
           </tr>
           <tr>
-          <td colspan="3">&nbsp;</td>
-          <td colspan="14" align="right">
+          <td colspan="4"><input type="button" name="show_charts" value="Show Charts" onclick="openMyDialog()" /></td>
+          <td colspan="13" align="right">
               <table>
               <tr>
               <th>SQL Operator:</th>
@@ -392,19 +459,6 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
         </p>
         <p id="tag_detail">&nbsp;</p>
         <div class="messagedetail" id="message_detail">Select a Row to See the Detail.</div>
-        </div>
-	</div>
-	<div id="tabs-3">
-	    <div class="detailbox">
-            <form action="" id="fmFilterChart">       
-              <select name="chartcolumn" id="chartcolumn" onchange="drawChart()">
-                <option value=""></option>
-                <option value="priority__severity">Priority</option>
-                <option value="facility__facility">Facility</option>
-                <option value="fromhost">Host</option>
-                <option value="syslogtag">Tag</option>
-              </select>
-            </form>
         </div>
 	</div>
 </div>

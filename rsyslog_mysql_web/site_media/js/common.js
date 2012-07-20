@@ -183,9 +183,6 @@ function setTimeOnElem(elem) {
     var hour        = now.getHours();
     var minute      = now.getMinutes();
     var second      = now.getSeconds();
-    //var monthnumber = now.getMonth();
-    //var monthday    = now.getDate();
-    //var year        = now.getYear();
     
     // Conver to AM,PM
     var ap = "AM";

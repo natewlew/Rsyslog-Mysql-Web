@@ -135,14 +135,25 @@ def flexigridajax(request):
         
         chartcolumn = request.GET.get('chartcolumn', 'priority__severity')
         
-        rows = queryset.values(chartcolumn).annotate(my_count=Count(chartcolumn)).values(chartcolumn, 'my_count')
+        # It chart column selected, there needs to be special processing
+        if chartcolumn == "devicereportedtime":
         
-        #return HttpResponse(rows.query)
+            rows = queryset.values('checksum').extra(select={chartcolumn: """DATE(DeviceReportedTime)"""}).annotate(my_count=Count('id')).values(chartcolumn, 'my_count').order_by(chartcolumn)
+            
+            # Populate the data in the table
+            for query in rows:
+            
+                my_list.append([query[chartcolumn].strftime("%s" % (DATE_FORMAT)), query['my_count']])
+            
+        # Normal Chart Column Field
+        else:
         
-        # Populate the data in the table
-        for query in rows:
+            rows = queryset.values(chartcolumn).annotate(my_count=Count(chartcolumn)).values(chartcolumn, 'my_count')
         
-            my_list.append([query[chartcolumn], query['my_count']])
+            # Populate the data in the table
+            for query in rows:
+            
+                my_list.append([query[chartcolumn], query['my_count']])
             
         # Return Json
         return HttpResponse(simplejson.dumps([my_list]), mimetype='application/json')
