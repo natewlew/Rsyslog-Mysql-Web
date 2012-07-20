@@ -138,6 +138,9 @@ def flexigridajax(request):
         # It chart column selected, there needs to be special processing
         if chartcolumn == "devicereportedtime":
         
+            # Using Checksum in values. This is only was I could get DATE(DeviceReportedTime) 
+            # in the group by to work. Checksum is always zero so it does not affect the query.
+            # Otherwise a valid column is in the group by and destroys the query.
             rows = queryset.values('checksum').extra(select={chartcolumn: """DATE(DeviceReportedTime)"""}).annotate(my_count=Count('id')).values(chartcolumn, 'my_count').order_by(chartcolumn)
             
             # Populate the data in the table
