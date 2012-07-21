@@ -57,6 +57,14 @@ h1 {
     font-size: 18px;
 }
 
+.tablebox {
+    border-style:solid;
+    border-width: 1px;
+    border-color: #3986bd;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
 .footer {
     text-align: center;
     font-size: 12px;
@@ -99,3 +107,13 @@ h1 {
     color: white;
 }
 
+
+/** 
+    Jquery Radio button
+**/
+.ui-button{ 
+    font-size: 12px;
+}
+.ui-button-text-only .ui-button-text { 
+    padding: .1em .6em .2em; 
+}

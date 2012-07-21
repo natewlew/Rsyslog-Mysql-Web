@@ -21,7 +21,6 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
 from logviewer.utils import queryHelper
 from django.http import HttpResponse
-#import simplejson
 from django.utils import simplejson
 import csv
 from datetime import datetime
@@ -170,47 +169,61 @@ def flexigridajax(request):
         # Paginate Results
         p = Paginator(queryset, rp)
         
-        rows = p.page(page)
-    
-        # Populate the data in the table
-        for query in rows:     
+        # Try to Fetch the Query
+        try:
         
-            # Trim Message if it is greater than 120 characters
-            if(len(query.message) > 120):
-                mymessage = "%s ...." % query.message[:120] # trim the message if it is greater than 120 chars
-            else:
-                mymessage = query.message # leave it alone
+            rows = p.page(page)
+    
+            # Populate the data in the table
+            for query in rows:     
             
-            mydate = query.devicereportedtime.strftime("%s %s" % (DATE_FORMAT, TIME_FORMAT))
-            
-            mynow = datetime.now()
-            
-            tdelta = mynow - query.devicereportedtime # Get age 
-            
-            # Create Dictionary for Row
-            myvalues = { 'id': count,
-                         'cell':
-                            {'id': query.id,
-                            'devicereportedtime': mydate,
-                            'age': "%s, %s, %s" % (tdelta.days, tdelta.seconds//3600, (tdelta.seconds//60)%60), # Get age in Days,Hours,Minutes
-                            'facility': query.facility.facility,
-                            'priority': query.priority.severity,
-                            'fromhost': query.fromhost,
-                            'syslogtag': query.syslogtag,
-                            'message': mymessage,
-                            'messagefull': query.message
+                # Trim Message if it is greater than 120 characters
+                if(len(query.message) > 120):
+                    mymessage = "%s ...." % query.message[:120] # trim the message if it is greater than 120 chars
+                else:
+                    mymessage = query.message # leave it alone
+                
+                mydate = query.devicereportedtime.strftime("%s %s" % (DATE_FORMAT, TIME_FORMAT))
+                
+                mynow = datetime.now()
+                
+                tdelta = mynow - query.devicereportedtime # Get age 
+                
+                # Create Dictionary for Row
+                myvalues = { 'id': count,
+                             'cell':
+                                {'id': query.id,
+                                'devicereportedtime': mydate,
+                                'age': "%s, %s, %s" % (tdelta.days, tdelta.seconds//3600, (tdelta.seconds//60)%60), # Get age in Days,Hours,Minutes
+                                'facility': query.facility.facility,
+                                'priority': query.priority.severity,
+                                'fromhost': query.fromhost,
+                                'syslogtag': query.syslogtag,
+                                'message': mymessage,
+                                'messagefull': query.message
+                                }
                             }
-                        }
-            
-            # Append Dictionary to List
-            my_list.append(myvalues)
-            
-            count += 1  
+                
+                # Append Dictionary to List
+                my_list.append(myvalues)
+                
+                count += 1  
+                
+            # Set the Row Count
+            my_count = p.count
+        
+        # If there is an Error
+        # set the count to zero
+        # and return empty result.
+        except:
+        
+            # Set the Row Count
+            my_count = 0
         
         # Create Final Json Dictionary
         json_dict = {
             'page': page,
-            'total': p.count,
+            'total': my_count,
             'rows': my_list
             }
         

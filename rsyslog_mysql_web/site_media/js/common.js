@@ -89,19 +89,11 @@ function setDetailText(mymessage, host, mydate, priority, tag, facility) {
     
     // Set Query Helpers
     if(mymessage.length > 0) {
-    
-        host_query_helper = '<input type="button" value="Search" onClick="append_query(\'' + host + '\', \'fromhost\')">'
-        host_query_helper += '<input type="button" value="Exclude" onClick="append_query(\'--' + host + '\', \'fromhost\')"> '
         
-        facility_query_helper = '<input type="button" value="Search" onClick="append_query(\'' + facility + '\', \'facility\')">'
-        facility_query_helper += '<input type="button" value="Exclude" onClick="append_query(\'--' + facility + '\', \'facility\')"> '
-        
-        priority_query_helper = '<input type="button" value="Search" onClick="append_query(\'' + priority + '\', \'priority\')">'
-        priority_query_helper += '<input type="button" value="Exclude" onClick="append_query(\'--' + priority + '\', \'priority\')"> '
-        
-        tag_query_helper = '<input type="button" value="Search" onClick="append_query(\'' + tag + '\', \'syslogtag\')">'
-        tag_query_helper += '<input type="button" value="Exclude" onClick="append_query(\'--' + tag + '\', \'syslogtag\')"> '
-        
+        host_query_helper = getSearchExcludeButtons('fromhost', host);
+        facility_query_helper = getSearchExcludeButtons('facility', facility);
+        priority_query_helper = getSearchExcludeButtons('priority', priority);
+        tag_query_helper = getSearchExcludeButtons('syslogtag', tag);        
     }
     
     
@@ -109,19 +101,35 @@ function setDetailText(mymessage, host, mydate, priority, tag, facility) {
     message_detail.innerHTML = mymessage;
     
     var host_detail = document.getElementById('host_detail');  
-    host_detail.innerHTML = host_query_helper + host;
+    host_detail.innerHTML = host_query_helper + ' ' + host;
     
     var facility_detail = document.getElementById('facility_detail');  
-    facility_detail.innerHTML = facility_query_helper + facility;
+    facility_detail.innerHTML = facility_query_helper + ' ' + facility;
     
     var date_detail = document.getElementById('date_detail');  
     date_detail.innerHTML = mydate;
     
     var priority_detail = document.getElementById('priority_detail');   
-    priority_detail.innerHTML = priority_query_helper + priority;
+    priority_detail.innerHTML = priority_query_helper + ' ' + priority;
     
     var tag_detail = document.getElementById('tag_detail');  
-    tag_detail.innerHTML = tag_query_helper + tag;
+    tag_detail.innerHTML = tag_query_helper + ' ' + tag;
+}
+
+/**
+    Build the Search and Exclude Helper Buttons
+**/
+function getSearchExcludeButtons(name, value) {
+
+    // build Search Button
+    html = '<button class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon ui-icon-search" ';
+    html += 'onclick="append_query(\'' + value + '\', \'' + name + '\')" title="Click to Search ' + name + ' for: ' + value + '">Search</span></button>';
+    
+    // Build Exclude Button
+    html += '<button class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon ui-icon-cancel" ';
+    html += 'onClick="append_query(\'--' + value + '\', \'' + name + '\')" title="Click to Exclude ' + name + ' for: ' + value + '">Exclude</span></button>';
+    
+    return html;
 }
 
 /**
@@ -242,8 +250,6 @@ function export_to_spreadsheet(mytype) {
         values = jQuery.param(values);
         window.location = sitelink + "ajax?" + values + '&export_format=' + mytype
     }
-    
-    clear_input_dropdown('export', "");
 }
 
 /**
