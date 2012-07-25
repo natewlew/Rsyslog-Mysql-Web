@@ -122,12 +122,12 @@ function setDetailText(mymessage, host, mydate, priority, tag, facility) {
 function getSearchExcludeButtons(name, value) {
 
     // build Search Button
-    html = '<button class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon ui-icon-search" ';
-    html += 'onclick="append_query(\'' + value + '\', \'' + name + '\')" title="Click to Search ' + name + ' for: ' + value + '">Search</span></button>';
+    html = '<button class="ui-state-default ui-corner-all" onclick="append_query(\'' + value + '\', \'' + name + '\')" title="Click to Search ' + name + ' for: ' + value + '"> ';
+    html += '<span class="ui-icon ui-icon ui-icon-search">Search</span></button>';
     
     // Build Exclude Button
-    html += '<button class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon ui-icon-cancel" ';
-    html += 'onClick="append_query(\'--' + value + '\', \'' + name + '\')" title="Click to Exclude ' + name + ' for: ' + value + '">Exclude</span></button>';
+    html += '<button class="ui-state-default ui-corner-all" onClick="append_query(\'--' + value + '\', \'' + name + '\')" title="Click to Exclude ' + name + ' for: ' + value + '"> ';
+    html += '<span class="ui-icon ui-icon ui-icon-cancel">Exclude</span></button>';
     
     return html;
 }
