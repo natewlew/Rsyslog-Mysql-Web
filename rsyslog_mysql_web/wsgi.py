@@ -18,11 +18,14 @@ This file is part of Rsyslog Mysql Web, Copyright 2012 Nathan Lewis <natewlew@gm
 import os
 import sys
 
-# Python Paths
-sys.path.append('/opt/python/rsyslog_mysql_web')
-#sys.path.append('/opt/python/rsyslog_mysql_web/logviewer')
-#sys.path.append('/opt/python/rsyslog_mysql_web/rsyslog_mysql_web')
-
+path = '/opt/python'
+if path not in sys.path:
+    sys.path.append(path)
+    
+path = '/opt/python/rsyslog_mysql_web'
+if path not in sys.path:
+    sys.path.append(path)
+    
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "rsyslog_mysql_web.settings")
 
 # This application object is used by any WSGI server configured to use this
